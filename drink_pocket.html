@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Drink Pocket — Offline</title>
+<link rel="icon" href="data:;base64,iVBORw0KGgo=">
+<style>
+  :root{
+    --accent:#2b6cb0;
+    --muted:#666;
+    --radius:12px;
+    --gap:14px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  }
+  html,body{height:100%; margin:0; background:#fff; color:#111;}
+  .app{
+    max-width:760px;
+    margin:0 auto;
+    padding:20px;
+    box-sizing:border-box;
+  }
+  header{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    margin-bottom:18px;
+  }
+  h1{font-size:20px;margin:0}
+  .searchWrap{flex:1}
+  #search{
+    width:100%;
+    padding:14px 16px;
+    font-size:16px;
+    border-radius:999px;
+    border:1px solid #ddd;
+    box-shadow:0 1px 0 rgba(0,0,0,0.02) inset;
+    outline:none;
+  }
+  .controls{display:flex; gap:8px}
+  button{
+    background:var(--accent);
+    color:white;
+    border:0;
+    padding:10px 12px;
+    border-radius:10px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  button.ghost{background:transparent;color:var(--accent);border:1px solid #e1e8f0}
+  main{margin-top:6px}
+  .card{background:#fafafa;border-radius:12px;padding:16px;box-shadow:0 6px 18px rgba(0,0,0,0.04);margin-bottom:12px}
+  .titleRow{display:flex;justify-content:space-between;align-items:center}
+  .titleRow h2{margin:0;font-size:18px}
+  .meta{color:var(--muted);font-size:13px;margin-top:8px}
+  .section{margin-top:12px}
+  label{display:block;font-weight:600;margin-bottom:6px}
+  textarea,input[type="text"]{width:100%;padding:10px;border-radius:8px;border:1px solid #e6e6e6;font-size:14px;}
+  textarea{min-height:120px;resize:vertical}
+  .list{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-top:12px}
+  .list .item{background:white;border:1px solid #f0f0f0;padding:10px;border-radius:10px;cursor:pointer}
+  .small{font-size:13px;color:var(--muted)}
+  .actions{display:flex;gap:8px;margin-top:10px}
+  .danger{background:#d9534f}
+  footer{margin-top:20px;color:var(--muted);font-size:13px}
+  @media (max-width:420px){
+    .controls{flex-direction:column}
+    .list{grid-template-columns:repeat(2,1fr)}
+  }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <header>
+    <div style="flex:1">
+      <h1>Drink Pocket</h1>
+      <div class="searchWrap">
+        <input id="search" placeholder="Cerca un drink (es. Mojito) — premi Invio" aria-label="Cerca un drink" />
+      </div>
+    </div>
+    <div class="controls" aria-hidden="false">
+      <button id="btnAdd">+ Nuovo</button>
+      <button id="btnManage" class="ghost">Gestisci</button>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="card" id="welcome">
+      <div class="titleRow"><h2>Benvenuto</h2></div>
+      <p class="meta">Cerca un drink oppure premi <strong>+ Nuovo</strong> per crearne uno direttamente dal cellulare. Tutto viene salvato offline sul tuo telefono (localStorage).</p>
+      <div class="section">
+        <label>Lista rapida</label>
+        <div id="quickList" class="list"></div>
+      </div>
+      <div class="section small">Puoi anche esportare/importare i drink dal menu Gestisci.</div>
+    </div>
+
+    <div id="viewer" style="display:none"></div>
+
+    <div id="editorWrap" style="display:none" class="card">
+      <div class="titleRow"><h2 id="editTitle">Nuovo drink</h2></div>
+      <div class="section">
+        <label for="inpName">Nome (unico)</label>
+        <input id="inpName" type="text" placeholder="es. Mojito" />
+      </div>
+      <div class="section">
+        <label for="inpSubtitle">Titolo / Variante (opzionale)</label>
+        <input id="inpSubtitle" type="text" placeholder="es. Mojito Classico" />
+      </div>
+      <div class="section">
+        <label for="inpIngredients">Ingredienti / Dosi (usa righe separate)</label>
+        <textarea id="inpIngredients" placeholder="50 ml Rum bianco
+2 cucchiaini di zucchero
+Foglie di menta
+1/2 lime"></textarea>
+      </div>
+      <div class="section">
+        <label for="inpProcedure">Procedimento</label>
+        <textarea id="inpProcedure" placeholder="Pesta la menta con lo zucchero..."></textarea>
+      </div>
+      <div class="actions">
+        <button id="saveBtn">Salva</button>
+        <button id="cancelEdit" class="ghost">Annulla</button>
+        <button id="deleteBtn" class="danger" style="display:none">Elimina</button>
+      </div>
+    </div>
+
+    <div id="manageWrap" style="display:none" class="card">
+      <div class="titleRow"><h2>Gestione drink</h2></div>
+      <p class="small">Modifica, esporta o importa i tuoi drink. L'import sovrascrive i dati correnti.</p>
+      <div class="section">
+        <label>Esporta (copia il JSON o premi Esporta file)</label>
+        <textarea id="exportArea" readonly style="min-height:120px"></textarea>
+        <div class="actions">
+          <button id="btnExportFile">Esporta file</button>
+          <button id="btnCopy" class="ghost">Copia negli appunti</button>
+        </div>
+      </div>
+      <div class="section">
+        <label>Importa (incolla qui il JSON)</label>
+        <textarea id="importArea" placeholder='{"mojito": {"titolo":"Mojito", ...}}' ></textarea>
+        <div class="actions">
+          <button id="btnImport">Importa</button>
+          <button id="btnReset" class="danger">Reset esempio</button>
+        </div>
+      </div>
+      <div class="section">
+        <label>Lista completa</label>
+        <div id="fullList" class="list"></div>
+      </div>
+      <div class="actions" style="margin-top:12px">
+        <button id="closeManage" class="ghost">Chiudi</button>
+      </div>
+    </div>
+
+  </main>
+
+  <footer>
+    <div>Salvataggio: <span id="saveMode">local</span> — File singolo offline</div>
+  </footer>
+</div>
+
+<script>
+/* Drink Pocket — single-file offline app
+   - Ricerca e visualizzazione
+   - Editor per creare/modificare/eliminare
+   - Esporta/importa JSON, esporta file
+   - Tutto in localStorage (key: drinkPocketData)
+*/
+
+const STORAGE_KEY = "drinkPocketData_v1";
+let data = {};
+
+// sample seed
+const seed = {
+  "mojito": {
+    "titolo":"Mojito",
+    "subtitle":"Classico",
+    "ingredienti":["50 ml Rum bianco","2 cucchiaini di zucchero","Foglie di menta","1/2 lime","Soda q.b."],
+    "procedimento":"Pesta menta e zucchero, aggiungi lime, ghiaccio, rum e soda. Mescola delicatamente."
+  },
+  "negroni":{
+    "titolo":"Negroni",
+    "subtitle":"",
+    "ingredienti":["30 ml Gin","30 ml Vermouth Rosso","30 ml Bitter"],
+    "procedimento":"Mescola tutto con ghiaccio e servi in bicchiere old fashioned con scorza d'arancia."
+  },
+  "espresso_martini":{
+    "titolo":"Espresso Martini",
+    "subtitle":"",
+    "ingredienti":["40 ml Vodka","30 ml Liquore al caffè","1 caffè espresso freddo","Ghiaccio"],
+    "procedimento":"Shakera energicamente con ghiaccio e filtra in coppa fredda. Guarnire con chicchi di caffè."
+  }
+};
+
+// utils
+function saveData(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  renderQuick();
+  renderExport();
+}
+function loadData(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(raw){
+    try{
+      data = JSON.parse(raw);
+      return;
+    }catch(e){
+      console.error("Errore parse storage", e);
+    }
+  }
+  data = seed;
+  saveData();
+}
+
+function slugify(name){
+  return name.toLowerCase().trim().replace(/\s+/g,"_").replace(/[^a-z0-9_-]/g,"");
+}
+
+// render
+const quickList = document.getElementById("quickList");
+const main = document.getElementById("main");
+const viewer = document.getElementById("viewer");
+const editorWrap = document.getElementById("editorWrap");
+const manageWrap = document.getElementById("manageWrap");
+const fullList = document.getElementById("fullList");
+const exportArea = document.getElementById("exportArea");
+const importArea = document.getElementById("importArea");
+const saveMode = document.getElementById("saveMode");
+
+function renderQuick(){
+  quickList.innerHTML = "";
+  const keys = Object.keys(data);
+  keys.slice(0,8).forEach(k=>{
+    const d = data[k];
+    const it = document.createElement("div");
+    it.className="item";
+    it.innerHTML = "<strong>"+(d.titolo||k)+"</strong><div class='small'>"+(d.subtitle||"")+"</div>";
+    it.onclick = ()=> showDrink(k);
+    quickList.appendChild(it);
+  });
+}
+function renderExport(){
+  exportArea.value = JSON.stringify(data, null, 2);
+  // full list
+  fullList.innerHTML = "";
+  Object.keys(data).sort().forEach(k=>{
+    const li = document.createElement("div");
+    li.className="item";
+    li.textContent = (data[k].titolo || k);
+    li.onclick = ()=> editDrink(k);
+    fullList.appendChild(li);
+  });
+}
+
+// show
+function showDrink(key){
+  const d = data[key];
+  if(!d){
+    viewer.innerHTML = "<div class='card'><h2>Drink non trovato</h2></div>";
+    viewer.style.display="block";
+    editorWrap.style.display="none";
+    manageWrap.style.display="none";
+    return;
+  }
+  const html = `
+    <div class="card">
+      <div class="titleRow"><h2>${escapeHtml(d.titolo || key)}</h2></div>
+      ${d.subtitle ? `<div class="meta">${escapeHtml(d.subtitle)}</div>` : ""}
+      <div class="section"><label>Ingredienti</label>
+        <ul>${(d.ingredienti||[]).map(i => "<li>"+escapeHtml(i)+"</li>").join("")}</ul>
+      </div>
+      <div class="section"><label>Procedimento</label>
+        <div>${escapeHtml(d.procedimento||"")}</div>
+      </div>
+      <div class="actions">
+        <button id="btnEditShown">Modifica</button>
+        <button id="btnBack" class="ghost">Indietro</button>
+      </div>
+    </div>
+  `;
+  viewer.innerHTML = html;
+  viewer.style.display="block";
+  editorWrap.style.display="none";
+  manageWrap.style.display="none";
+  document.getElementById("btnEditShown").onclick = ()=> editDrink(key);
+  document.getElementById("btnBack").onclick = ()=> { viewer.style.display="none"; }
+}
+
+// editor
+const inpName = document.getElementById("inpName");
+const inpSubtitle = document.getElementById("inpSubtitle");
+const inpIngredients = document.getElementById("inpIngredients");
+const inpProcedure = document.getElementById("inpProcedure");
+const editTitle = document.getElementById("editTitle");
+const saveBtn = document.getElementById("saveBtn");
+const cancelEdit = document.getElementById("cancelEdit");
+const deleteBtn = document.getElementById("deleteBtn");
+
+let editingKey = null;
+
+function newDrink(){
+  editingKey = null;
+  editTitle.textContent = "Nuovo drink";
+  inpName.value = "";
+  inpSubtitle.value = "";
+  inpIngredients.value = "";
+  inpProcedure.value = "";
+  deleteBtn.style.display = "none";
+  editorWrap.style.display="block";
+  viewer.style.display="none";
+  manageWrap.style.display="none";
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+function editDrink(key){
+  const d = data[key];
+  if(!d) return;
+  editingKey = key;
+  editTitle.textContent = "Modifica: " + (d.titolo||key);
+  inpName.value = (d.titolo || "");
+  inpSubtitle.value = (d.subtitle || "");
+  inpIngredients.value = (d.ingredienti || []).join("\n");
+  inpProcedure.value = (d.procedimento || "");
+  deleteBtn.style.display = "inline-block";
+  editorWrap.style.display="block";
+  viewer.style.display="none";
+  manageWrap.style.display="none";
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+saveBtn.addEventListener("click", ()=>{
+  const name = inpName.value.trim();
+  if(!name){
+    alert("Inserisci il nome del drink.");
+    return;
+  }
+  const slug = slugify(name);
+  const obj = {
+    titolo: name,
+    subtitle: inpSubtitle.value.trim(),
+    ingredienti: inpIngredients.value.split(/\n+/).map(s=>s.trim()).filter(Boolean),
+    procedimento: inpProcedure.value.trim()
+  };
+  // if editing a different key and slug changed, remove old
+  if(editingKey && editingKey !== slug){
+    delete data[editingKey];
+  }
+  data[slug] = obj;
+  saveData();
+  editorWrap.style.display="none";
+  viewer.style.display="none";
+  editingKey = null;
+  alert("Salvato!");
+});
+
+cancelEdit.addEventListener("click", ()=>{
+  editorWrap.style.display="none";
+});
+
+deleteBtn.addEventListener("click", ()=>{
+  if(!editingKey) return;
+  if(confirm("Eliminare definitivamente questo drink?")) {
+    delete data[editingKey];
+    saveData();
+    editorWrap.style.display="none";
+    alert("Eliminato.");
+  }
+});
+
+// manage
+document.getElementById("btnManage").addEventListener("click", ()=>{
+  manageWrap.style.display = "block";
+  editorWrap.style.display = "none";
+  viewer.style.display = "none";
+  renderExport();
+  window.scrollTo({top:0, behavior:"smooth"});
+});
+document.getElementById("closeManage").addEventListener("click", ()=>{
+  manageWrap.style.display = "none";
+});
+
+document.getElementById("btnAdd").addEventListener("click", newDrink);
+
+// search
+const search = document.getElementById("search");
+search.addEventListener("keypress", (e)=>{
+  if(e.key === "Enter"){
+    const q = search.value.trim().toLowerCase();
+    if(!q) return;
+    // try exact slug
+    const slug = slugify(q);
+    if(data[slug]) { showDrink(slug); return; }
+    // try title match
+    const found = Object.keys(data).find(k => (data[k].titolo||k).toLowerCase() === q);
+    if(found){ showDrink(found); return; }
+    // partial match
+    const partial = Object.keys(data).find(k => (data[k].titolo||k).toLowerCase().includes(q));
+    if(partial){ showDrink(partial); return; }
+    alert("Drink non trovato. Puoi crearne uno con + Nuovo.");
+  }
+});
+
+// export / import
+document.getElementById("btnExportFile").addEventListener("click", ()=>{
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "drink-pocket-export.json";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById("btnCopy").addEventListener("click", async ()=>{
+  try{
+    await navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+    alert("Copiato negli appunti!");
+  }catch(e){
+    alert("Impossibile copiare automaticamente. Seleziona e copia manualmente il testo nell'area.");
+  }
+});
+
+document.getElementById("btnImport").addEventListener("click", ()=>{
+  const txt = importArea.value.trim();
+  if(!txt) { alert("Incolla il JSON da importare."); return; }
+  try{
+    const parsed = JSON.parse(txt);
+    if(typeof parsed !== "object"){
+      throw new Error("Formato errato");
+    }
+    if(!confirm("L'import sovrascriverà i dati attuali. Continuare?")) return;
+    data = parsed;
+    saveData();
+    manageWrap.style.display="none";
+    alert("Import completato.");
+  }catch(e){
+    alert("JSON non valido: " + e.message);
+  }
+});
+
+document.getElementById("btnReset").addEventListener("click", ()=>{
+  if(confirm("Ripristinare i drink d'esempio e cancellare tutti i tuoi?")) {
+    data = seed;
+    saveData();
+    renderExport();
+    alert("Ripristinato.");
+  }
+});
+
+// helper
+function escapeHtml(s){
+  if(!s) return "";
+  return s.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+}
+
+// init
+loadData();
+renderQuick();
+renderExport();
+</script>
+</body>
+</html>
