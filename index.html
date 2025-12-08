@@ -6,11 +6,11 @@
   <title>Mint Pocket</title>
   <style>
     :root{
-      --mint-main:#9BAF8B;       /* verde salvia principale */
-      --mint-dark:#5C6B4F;       /* salvia scuro per testi/bottoni */
-      --mint-light:#E3E9DC;      /* sfondo soft */
-      --accent-warm:#D9B18C;     /* accento caldo tipo legno */
-      --bg-main:#F7F4EF;         /* panna di sfondo */
+      --mint-main:#9BAF8B;
+      --mint-dark:#5C6B4F;
+      --mint-light:#E3E9DC;
+      --accent-warm:#D9B18C;
+      --bg-main:#F7F4EF;
       --text-main:#333333;
       --text-soft:#6B6B6B;
       --radius-lg:18px;
@@ -106,6 +106,7 @@
     .list{
       padding:14px 16px 80px;
       background:linear-gradient(180deg,rgba(227,233,220,0.55),transparent 26px);
+      min-height:200px;
     }
     .empty{
       text-align:center;
@@ -157,8 +158,13 @@
       color:var(--text-soft);
       display:flex;
       flex-direction:column;
-      gap:4px;
+      gap:8px;
       margin-bottom:6px;
+    }
+    .ingredient-section{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
     }
     .label{
       font-size:0.72rem;
@@ -166,8 +172,31 @@
       letter-spacing:0.06em;
       color:var(--text-soft);
     }
+    .ingredient-list{
+      list-style:none;
+      display:flex;
+      flex-direction:column;
+      gap:3px;
+      margin-left:0;
+      padding-left:0;
+    }
+    .ingredient-list li{
+      color:var(--text-main);
+      font-size:0.88rem;
+      padding-left:12px;
+      position:relative;
+    }
+    .ingredient-list li::before{
+      content:"•";
+      position:absolute;
+      left:0;
+      color:var(--mint-main);
+      font-weight:bold;
+    }
     .value{
       color:var(--text-main);
+      white-space:pre-wrap;
+      word-break:break-word;
     }
     .actions{
       display:flex;
@@ -298,6 +327,7 @@
   <script>
     const STORAGE_KEY = 'mintPocketDrinks_v1';
     let drinks = [];
+    let hasSearched = false;
 
     function loadFromStorage(){
       try{
@@ -315,7 +345,7 @@
     function createDrink(){
       const nome = prompt('Nome del drink:');
       if(!nome) return;
-      const ingr = prompt('Ingredienti (es. 3cl gin, 3cl vermouth...):') || '';
+      const ingr = prompt('Ingredienti (uno per riga, es:\n3cl gin\n3cl vermouth\n1 dash angostura):') || '';
       const istr = prompt('Preparazione / note:') || '';
       drinks.unshift({
         id: Date.now(),
@@ -332,7 +362,7 @@
       if(!d) return;
       const nome = prompt('Nome del drink:', d.nome);
       if(!nome) return;
-      const ingr = prompt('Ingredienti:', d.ingredienti) ?? d.ingredienti;
+      const ingr = prompt('Ingredienti (uno per riga):', d.ingredienti) ?? d.ingredienti;
       const istr = prompt('Preparazione / note:', d.istruzioni) ?? d.istruzioni;
       d.nome = nome;
       d.ingredienti = ingr;
@@ -381,9 +411,25 @@
       reader.readAsText(file);
     }
 
+    function parseIngredienti(str){
+      if(!str || !str.trim()) return [];
+      return str.split('\n').map(i => i.trim()).filter(i => i.length > 0);
+    }
+
     function render(){
       const listEl = document.getElementById('list');
       const q = document.getElementById('search').value.trim().toLowerCase();
+      
+      if(!q && !hasSearched){
+        listEl.innerHTML = `
+          <div class="empty">
+            <span class="emoji">🥂</span>
+            <p>Scrivi il nome di un drink per cercarlo.</p>
+          </div>`;
+        document.getElementById('counter').textContent = '0';
+        return;
+      }
+
       const filtered = drinks.filter(d =>
         !q ||
         d.nome.toLowerCase().includes(q) ||
@@ -395,35 +441,41 @@
       if(filtered.length === 0){
         listEl.innerHTML = `
           <div class="empty">
-            <span class="emoji">🥂</span>
-            <p>Nessun drink salvato.</p>
-            <p>Inizia a costruire la tua lista di cocktail di casa.</p>
+            <span class="emoji">🍸</span>
+            <p>Nessun drink trovato.</p>
           </div>`;
         return;
       }
 
-      listEl.innerHTML = filtered.map(d => `
+      listEl.innerHTML = filtered.map(d => {
+        const ingredienti = parseIngredienti(d.ingredienti);
+        return `
         <article class="card">
           <div class="card-top">
             <div class="card-name">${escapeHtml(d.nome)}</div>
             <span class="card-date">${escapeHtml(d.data)}</span>
           </div>
           <div class="card-body">
-            <div>
+            <div class="ingredient-section">
               <div class="label">Ingredienti</div>
-              <div class="value">${escapeHtml(d.ingredienti || '—')}</div>
+              ${ingredienti.length > 0 
+                ? `<ul class="ingredient-list">${ingredienti.map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul>`
+                : `<div class="value">—</div>`
+              }
             </div>
-            <div>
+            ${d.istruzioni ? `
+            <div class="ingredient-section">
               <div class="label">Note</div>
-              <div class="value">${escapeHtml(d.istruzioni || '—')}</div>
+              <div class="value">${escapeHtml(d.istruzioni)}</div>
             </div>
+            ` : ''}
           </div>
           <div class="actions">
             <button class="btn btn-ghost" onclick="editDrink(${d.id})">✏️ Modifica</button>
             <button class="btn btn-primary" onclick="deleteDrink(${d.id})">🗑️ Elimina</button>
           </div>
         </article>
-      `).join('');
+      `}).join('');
     }
 
     function escapeHtml(str){
@@ -436,7 +488,12 @@
     }
 
     document.getElementById('newBtn').addEventListener('click',createDrink);
-    document.getElementById('search').addEventListener('input',render);
+    document.getElementById('search').addEventListener('input',(e)=>{
+      if(e.target.value.trim().length > 0){
+        hasSearched = true;
+      }
+      render();
+    });
 
     document.getElementById('menuBackupBtn').addEventListener('click',()=>{
       const existing = document.querySelector('.backup-bar');
