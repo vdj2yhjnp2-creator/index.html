@@ -3,16 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drink Pocket</title>
+    <title>🍹 Drink Pocket</title>
     <script type="module">
-        // Firebase - sostituisce localStorage con sincronizzazione automatica
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
-        import { getDatabase, ref, onValue, set, push } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
+        import { getDatabase, ref, onValue, set } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
         
         const firebaseConfig = {
             apiKey: "AIzaSyDq0z0XzL3kL9z5qZ7xY8w9vT2uR4sQ6pM",
             authDomain: "drink-pocket-sync.firebaseapp.com",
-            databaseURL: "https://drink-pocket-sync-default-rtdb.europe-west1.firebasedatabase.app",
+            databaseURL: "https://drink-pocket-sync-default-rtdb.europe-west1.firebasedatabase.app/",
             projectId: "drink-pocket-sync",
             storageBucket: "drink-pocket-sync.appspot.com",
             messagingSenderId: "123456789",
@@ -22,131 +21,150 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const drinksRef = ref(db, 'drinks');
+        
+        window.dbReady = true;
+        window.drinksRef = drinksRef;
+        window.setDrinks = set;
+        window.onValue = onValue;
     </script>
     <style>
-        /* Il tuo CSS originale resta uguale */
-        body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
-        input, button { padding: 10px; margin: 5px 0; width: 100%; box-sizing: border-box; }
-        .drink { background: #f0f0f0; padding: 15px; margin: 10px 0; border-radius: 8px; }
-        .search { background: #e8f4fd; padding: 10px; border-radius: 5px; }
-        #lista { min-height: 200px; }
+        body{font-family:system-ui,max-width:600px;margin:0 auto;padding:20px;background:#f8f9fa}
+        input,button{padding:12px;margin:8px 0;width:100%;box-sizing:border-box;border:1px solid #ddd;border-radius:8px;font-size:16px}
+        button{background:#007bff;color:white;border:none;cursor:pointer}
+        button:hover{background:#0056b3}
+        .drink{background:#fff;padding:20px;margin:12px 0;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,0.1)}
+        .drink h3{margin:0 0 10px;font-size:1.3em}
+        .search{background:#e3f2fd;padding:15px;border-radius:8px;margin-bottom:15px}
+        #lista{min-height:200px}
+        small{color:#666}
+        .status{padding:10px;border-radius:5px;margin:10px 0}
+        .ok{background:#d4edda;color:#155724;border:1px solid #c3e6cb}
+        .error{background:#f8d7da;color:#721c24;border:1px solid #f5c6cb}
     </style>
 </head>
 <body>
     <h1>🍹 Drink Pocket</h1>
-    <p><em>Sincronizza automaticamente tra PC e telefono!</em></p>
+    <div id="status" class="status">Caricamento Firebase...</div>
     
     <div class="search">
-        <input type="text" id="cerca" placeholder="Cerca drink..." oninput="filtraDrinks()">
+        <input type="text" id="cerca" placeholder="🔍 Cerca drink..." oninput="filtra()">
     </div>
     
-    <button onclick="nuovoDrink()">+ Nuovo Drink</button>
+    <button onclick="nuovo()">+ Nuovo Drink</button>
     <div id="lista"></div>
     
-    <div style="margin-top: 20px;">
-        <button onclick="esporta()">📤 Esporta</button>
-        <input type="file" id="importa" accept=".json" onchange="importa(event)" style="display:none;">
-        <button onclick="document.getElementById('importa').click()">📥 Importa</button>
+    <div style="margin-top:30px;padding-top:20px;border-top:1px solid #eee">
+        <button onclick="testSync()">🧪 Test Sincronizzazione</button>
+        <button onclick="esporta()">📤 Backup</button>
+        <input type="file" id="importa" accept=".json" onchange="importa(event)" style="display:none">
+        <button onclick="document.getElementById('importa').click()">📥 Ripristina</button>
     </div>
 
     <script>
-        let tuttiDrinks = [];
+        let drinks = [];
         
-        // Carica drinks da Firebase (sostituisce localStorage)
-        onValue(drinksRef, (snapshot) => {
-            tuttiDrinks = snapshot.val() ? Object.values(snapshot.val()) : [];
-            mostraDrinks();
-        });
-        
-        function salvaDrinks() {
-            set(drinksRef, tuttiDrinks.reduce((acc, drink, i) => {
-                acc[i] = drink;
-                return acc;
-            }, {}));
+        // Test Firebase
+        if(window.dbReady) {
+            document.getElementById('status').innerHTML = '✅ Firebase OK - Sincronizzazione attiva';
+            document.getElementById('status').className = 'status ok';
+            
+            onValue(window.drinksRef, (snap) => {
+                drinks = snap.val() ? Object.values(snap.val()) : [];
+                aggiornaLista();
+            });
+        } else {
+            document.getElementById('status').innerHTML = '❌ Firebase non caricato - Usa esporta/importa';
+            document.getElementById('status').className = 'status error';
         }
         
-        function nuovoDrink() {
-            const nome = prompt("Nome del drink:");
-            if (nome) {
-                const drink = {
-                    nome: nome,
-                    ingredienti: "",
-                    istruzioni: "",
-                    data: new Date().toLocaleDateString()
-                };
-                tuttiDrinks.push(drink);
-                salvaDrinks();
+        function salva() {
+            if(window.dbReady) {
+                const data = {};
+                drinks.forEach((d,i) => data[i] = d);
+                window.setDrinks(window.drinksRef, data);
             }
         }
         
-        function filtraDrinks() {
-            const cerca = document.getElementById('cerca').value.toLowerCase();
-            const lista = document.getElementById('lista');
-            lista.innerHTML = tuttiDrinks
-                .filter(d => d.nome.toLowerCase().includes(cerca))
-                .map(mostraDrink)
-                .join('');
+        function testSync() {
+            drinks.push({
+                nome: 'TEST ' + new Date().toLocaleTimeString(),
+                data: 'Sync OK',
+                ingredienti: 'Aperto da: ' + navigator.userAgent.slice(0,50)
+            });
+            salva();
+            alert('Test aggiunto! Controlla l\'altro dispositivo!');
         }
         
-        function mostraDrinks() {
-            filtraDrinks();
+        function nuovo() {
+            const nome = prompt("Nome drink:");
+            if(nome && window.dbReady) {
+                drinks.push({
+                    nome, ingredienti:"", istruzioni:"", 
+                    data: new Date().toLocaleDateString('it-IT')
+                });
+                salva();
+            } else if(!window.dbReady) {
+                alert('Firebase non funziona, usa esporta/importa');
+            }
         }
         
-        function mostraDrink(drink, index) {
-            return `
-                <div class="drink">
-                    <h3>${drink.nome}</h3>
-                    <p><strong>Ingredienti:</strong> ${drink.ingredienti || 'N/D'}</p>
-                    <p><strong>Istruzioni:</strong> ${drink.istruzioni || 'N/D'}</p>
-                    <small>${drink.data}</small>
-                    <br>
-                    <button onclick="modifica(${index})">✏️ Modifica</button>
-                    <button onclick="elimina(${index})">🗑️ Elimina</button>
-                </div>
-            `;
+        function filtra() {
+            const q = document.getElementById('cerca').value.toLowerCase();
+            document.getElementById('lista').innerHTML = 
+                drinks.filter(d=>d.nome.toLowerCase().includes(q))
+                      .map((d,i)=>drinkHTML(d,i)).join('');
         }
         
-        function modifica(index) {
-            const drink = tuttiDrinks[index];
-            drink.nome = prompt("Nome:", drink.nome) || drink.nome;
-            drink.ingredienti = prompt("Ingredienti:", drink.ingredienti) || drink.ingredienti;
-            drink.istruzioni = prompt("Istruzioni:", drink.istruzioni) || drink.istruzioni;
-            drink.data = new Date().toLocaleDateString();
-            salvaDrinks();
+        function aggiornaLista() { filtra(); }
+        
+        function drinkHTML(drink, i) {
+            return `<div class="drink">
+                <h3>${drink.nome}</h3>
+                <p><strong>🥃 Ingredienti:</strong> ${drink.ingredienti||'—'}</p>
+                <p><strong>📝 Istruzioni:</strong> ${drink.istruzioni||'—'}</p>
+                <small>✨ ${drink.data}</small>
+                <br><br>
+                <button onclick="mod(${i})" style="background:#28a745;width:48%;margin-right:4%">✏️</button>
+                <button onclick="elim(${i})" style="background:#dc3545;width:48%">🗑️</button>
+            </div>`;
         }
         
-        function elimina(index) {
-            if (confirm("Eliminare?")) {
-                tuttiDrinks.splice(index, 1);
-                salvaDrinks();
+        function mod(i) {
+            const d = drinks[i];
+            d.nome = prompt("Nome:", d.nome)||d.nome;
+            d.ingredienti = prompt("Ingredienti:", d.ingredienti)||d.ingredienti;
+            d.istruzioni = prompt("Istruzioni:", d.istruzioni)||d.istruzioni;
+            d.data = new Date().toLocaleDateString('it-IT');
+            salva();
+        }
+        
+        function elim(i) {
+            if(confirm("Eliminare?")) {
+                drinks.splice(i,1);
+                salva();
             }
         }
         
         function esporta() {
-            const dataStr = JSON.stringify(tuttiDrinks, null, 2);
-            const dataBlob = new Blob([dataStr], {type: 'application/json'});
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'drink-pocket-backup.json';
-            link.click();
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([JSON.stringify(drinks,null,2)],{type:'application/json'}));
+            a.download = 'drinks.json';
+            a.click();
         }
         
-        function importa(event) {
-            const file = event.target.files[0];
-            const reader = new FileReader();
-            reader.onload = function(e) {
+        function importa(e) {
+            const file = e.target.files[0];
+            const r = new FileReader();
+            r.onload = ev => {
                 try {
-                    const imported = JSON.parse(e.target.result);
-                    if (confirm("Sovrascrivere i dati?")) {
-                        tuttiDrinks = imported;
-                        salvaDrinks();
+                    const data = JSON.parse(ev.target.result);
+                    if(confirm("Sovrascrivere?")) {
+                        drinks = data;
+                        salva();
                     }
-                } catch(err) {
-                    alert("Errore file!");
-                }
+                } catch { alert("File non valido"); }
             };
-            reader.readAsText(file);
+            r.readAsText(file);
         }
     </script>
 </body>
