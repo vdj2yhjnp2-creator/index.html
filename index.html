@@ -287,6 +287,70 @@
       cursor:pointer;
     }
     .backup-btn span.icon{font-size:0.9rem;}
+    /* Modal */
+    .modal-overlay{
+      display:none;
+      position:fixed;
+      top:0;left:0;right:0;bottom:0;
+      background:rgba(0,0,0,0.5);
+      z-index:100;
+      justify-content:center;
+      align-items:flex-end;
+    }
+    .modal-overlay.active{display:flex;}
+    .modal-content{
+      background:#fff;
+      border-radius:20px 20px 0 0;
+      padding:20px;
+      width:100%;
+      max-width:520px;
+      box-shadow:0 -10px 30px rgba(0,0,0,0.2);
+    }
+    .modal-title{
+      font-size:1.1rem;
+      font-weight:600;
+      color:var(--mint-dark);
+      margin-bottom:12px;
+    }
+    .modal-textarea{
+      width:100%;
+      padding:12px;
+      border:1px solid rgba(155,175,139,0.45);
+      border-radius:12px;
+      font-size:0.95rem;
+      font-family:inherit;
+      resize:vertical;
+      min-height:120px;
+      color:var(--text-main);
+    }
+    .modal-textarea:focus{
+      outline:none;
+      border-color:var(--mint-main);
+      box-shadow:0 0 0 3px rgba(155,175,139,0.25);
+    }
+    .modal-actions{
+      display:flex;
+      gap:10px;
+      margin-top:12px;
+    }
+    .modal-btn{
+      flex:1;
+      padding:10px;
+      border:none;
+      border-radius:999px;
+      font-weight:600;
+      cursor:pointer;
+      transition:all .12s ease;
+    }
+    .modal-btn-confirm{
+      background:var(--mint-dark);
+      color:#fff;
+    }
+    .modal-btn-confirm:active{transform:scale(0.98);}
+    .modal-btn-cancel{
+      background:rgba(155,175,139,0.1);
+      color:var(--mint-dark);
+    }
     @media (max-width:480px){
       .app{border-radius:20px;}
       .header h1{font-size:1.5rem;}
@@ -322,12 +386,26 @@
     </footer>
   </div>
 
+  <!-- Modal per ingredienti -->
+  <div id="ingredientsModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-title">Ingredienti</div>
+      <textarea id="ingredientsTextarea" class="modal-textarea" placeholder="Scrivi ogni ingrediente su una nuova riga:&#10;3cl gin&#10;3cl vermouth dry&#10;1 dash angostura"></textarea>
+      <div class="modal-actions">
+        <button class="modal-btn modal-btn-cancel" id="cancelIngredientsBtn">Annulla</button>
+        <button class="modal-btn modal-btn-confirm" id="confirmIngredientsBtn">Salva</button>
+      </div>
+    </div>
+  </div>
+
   <input type="file" id="importInput" accept=".json" style="display:none" />
 
   <script>
     const STORAGE_KEY = 'mintPocketDrinks_v1';
     let drinks = [];
     let hasSearched = false;
+    let currentEditId = null;
+    let pendingDrinkData = null;
 
     function loadFromStorage(){
       try{
@@ -342,19 +420,45 @@
       render();
     }
 
+    function openIngredientsModal(defaultValue = '', callback){
+      document.getElementById('ingredientsTextarea').value = defaultValue;
+      document.getElementById('ingredientsModal').classList.add('active');
+      
+      const confirmBtn = document.getElementById('confirmIngredientsBtn');
+      const cancelBtn = document.getElementById('cancelIngredientsBtn');
+      
+      const handleConfirm = () => {
+        const value = document.getElementById('ingredientsTextarea').value;
+        document.getElementById('ingredientsModal').classList.remove('active');
+        confirmBtn.removeEventListener('click', handleConfirm);
+        cancelBtn.removeEventListener('click', handleCancel);
+        callback(value);
+      };
+      
+      const handleCancel = () => {
+        document.getElementById('ingredientsModal').classList.remove('active');
+        confirmBtn.removeEventListener('click', handleConfirm);
+        cancelBtn.removeEventListener('click', handleCancel);
+      };
+      
+      confirmBtn.addEventListener('click', handleConfirm);
+      cancelBtn.addEventListener('click', handleCancel);
+    }
+
     function createDrink(){
       const nome = prompt('Nome del drink:');
       if(!nome) return;
-      const ingr = prompt('Ingredienti (vai a capo per ogni ingrediente):\n\nEs:\n3cl gin\n3cl vermouth\n1 dash angostura') || '';
-      const istr = prompt('Preparazione / note:') || '';
-      drinks.unshift({
-        id: Date.now(),
-        nome,
-        ingredienti: ingr,
-        istruzioni: istr,
-        data: new Date().toLocaleDateString('it-IT')
+      openIngredientsModal('', (ingr) => {
+        const istr = prompt('Preparazione / note:') || '';
+        drinks.unshift({
+          id: Date.now(),
+          nome,
+          ingredienti: ingr,
+          istruzioni: istr,
+          data: new Date().toLocaleDateString('it-IT')
+        });
+        saveToStorage();
       });
-      saveToStorage();
     }
 
     function editDrink(id){
@@ -362,13 +466,14 @@
       if(!d) return;
       const nome = prompt('Nome del drink:', d.nome);
       if(!nome) return;
-      const ingr = prompt('Ingredienti (vai a capo per ogni ingrediente):', d.ingredienti) ?? d.ingredienti;
-      const istr = prompt('Preparazione / note:', d.istruzioni) ?? d.istruzioni;
-      d.nome = nome;
-      d.ingredienti = ingr;
-      d.istruzioni = istr;
-      d.data = new Date().toLocaleDateString('it-IT');
-      saveToStorage();
+      openIngredientsModal(d.ingredienti, (ingr) => {
+        const istr = prompt('Preparazione / note:', d.istruzioni) ?? d.istruzioni;
+        d.nome = nome;
+        d.ingredienti = ingr;
+        d.istruzioni = istr;
+        d.data = new Date().toLocaleDateString('it-IT');
+        saveToStorage();
+      });
     }
 
     function deleteDrink(id){
@@ -430,7 +535,6 @@
         return;
       }
 
-      // RICERCA SOLO NEL NOME
       const filtered = drinks.filter(d =>
         !q || d.nome.toLowerCase().includes(q)
       );
