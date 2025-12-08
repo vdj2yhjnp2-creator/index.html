@@ -67,7 +67,7 @@
       border:1px solid rgba(247,244,239,0.45);
       font-size:0.72rem;
     }
-    .categories-btn{
+    .categories-btn, .add-category-btn{
       background:rgba(255,255,255,0.2);
       border:1px solid rgba(255,255,255,0.3);
       border-radius:12px;
@@ -81,9 +81,16 @@
       align-items:center;
       gap:4px;
     }
-    .categories-btn:hover{
+    .categories-btn:hover, .add-category-btn:hover{
       background:rgba(255,255,255,0.3);
       transform:translateY(-1px);
+    }
+    .add-category-btn{
+      width:36px;
+      height:36px;
+      padding:0;
+      justify-content:center;
+      font-size:1.1rem;
     }
     .bar{
       padding:10px 16px 14px;
@@ -125,6 +132,18 @@
       padding:2px 6px;
       border-radius:999px;
       background:rgba(227,233,220,0.8);
+    }
+    .filter-indicator{
+      position:absolute;
+      right:10px;
+      top:50%;
+      transform:translateY(-50%);
+      background:var(--accent-warm);
+      color:#fff;
+      border-radius:999px;
+      padding:2px 6px;
+      font-size:0.7rem;
+      font-weight:500;
     }
     .list{
       padding:14px 16px 80px;
@@ -470,17 +489,24 @@
       border-radius:12px;
       margin-bottom:8px;
       gap:8px;
+      cursor:pointer;
+      transition:all .12s ease;
+    }
+    .category-item:hover{
+      background:rgba(155,175,139,0.15);
+      transform:translateX(4px);
     }
     .category-preview{
-      width:24px;
-      height:24px;
+      width:28px;
+      height:28px;
       border-radius:6px;
       display:flex;
       align-items:center;
       justify-content:center;
       font-weight:600;
       color:#fff;
-      font-size:0.8rem;
+      font-size:0.85rem;
+      flex-shrink:0;
     }
     .category-inputs{
       flex:1;
@@ -517,6 +543,7 @@
     .category-controls{
       display:flex;
       gap:4px;
+      flex-shrink:0;
     }
     .category-drag{
       cursor:move;
@@ -537,17 +564,6 @@
     .category-remove:hover{
       background:rgba(217,83,79,0.1);
       color:#d9534f;
-    }
-    .add-category-btn{
-      background:var(--mint-main);
-      color:#fff;
-      border:none;
-      padding:10px 16px;
-      border-radius:12px;
-      font-weight:600;
-      cursor:pointer;
-      width:100%;
-      margin-top:8px;
     }
     /* Modal Legenda */
     .legend-overlay{
@@ -705,11 +721,12 @@
     <header class="header">
       <div class="header-title">
         <h1>Mint Pocket</h1>
-        <span class="sub">Il taccuino dei tuoi drink</span>
+        <span class="sub" id="headerSub">Il taccuino dei tuoi drink</span>
       </div>
       <div class="header-actions">
-        <div class="tag">offline • questo dispositivo</div>
+        <div class="tag" id="statusTag">offline • questo dispositivo</div>
         <button class="categories-btn" id="categoriesBtn">🏷️ Categorie</button>
+        <button class="add-category-btn" id="addCategoryBtn">➕</button>
       </div>
     </header>
 
@@ -717,6 +734,7 @@
       <div class="search-wrap">
         <span class="search-icon">🔍</span>
         <input id="search" type="text" placeholder="Cerca un drink..." />
+        <div class="filter-indicator" id="filterIndicator" style="display:none;"></div>
       </div>
       <div class="counter" id="counter">0</div>
     </section>
@@ -764,9 +782,8 @@
     <div class="modal-content categories-modal-content">
       <div class="modal-title">Gestione Categorie</div>
       <div id="categoriesList"></div>
-      <button class="add-category-btn" id="addCategoryBtn">➕ Nuova Categoria</button>
       <div class="modal-actions">
-        <button class="modal-btn modal-btn-confirm" id="saveCategoriesBtn">Salva</button>
+        <button class="modal-btn modal-btn-confirm" id="saveCategoriesBtn">Chiudi</button>
       </div>
     </div>
   </div>
@@ -824,6 +841,7 @@
     let drinks = [];
     let categories = [];
     let hasSearched = false;
+    let currentFilter = null; // {type: 'category', id: categoryId}
     let currentLegendaTab = 'drink';
     let pendingDrinkData = null;
     let editingDrinkId = null;
@@ -851,6 +869,45 @@
 
     function saveCategories(){
       localStorage.setItem(CATEGORIES_KEY, JSON.stringify(categories));
+    }
+
+    function setFilter(type, id){
+      currentFilter = {type, id};
+      hasSearched = true;
+      document.getElementById('search').value = '';
+      render();
+      updateUIForFilter();
+    }
+
+    function clearFilter(){
+      currentFilter = null;
+      hasSearched = false;
+      document.getElementById('search').value = '';
+      document.getElementById('filterIndicator').style.display = 'none';
+      render();
+    }
+
+    function updateUIForFilter(){
+      const headerSub = document.getElementById('headerSub');
+      const statusTag = document.getElementById('statusTag');
+      const filterIndicator = document.getElementById('filterIndicator');
+      
+      if(currentFilter){
+        if(currentFilter.type === 'category'){
+          const cat = categories.find(c => c.id === currentFilter.id);
+          if(cat){
+            headerSub.textContent = `"${cat.nome}"`;
+            filterIndicator.textContent = cat.nome;
+            filterIndicator.style.display = 'block';
+            statusTag.style.display = 'none';
+            return;
+          }
+        }
+      }
+      
+      headerSub.textContent = 'Il taccuino dei tuoi drink';
+      statusTag.style.display = 'block';
+      filterIndicator.style.display = 'none';
     }
 
     function openTypeModal(callback){
@@ -888,7 +945,7 @@
       const cancelBtn = document.getElementById('cancelCategoriesBtn');
       
       const handleConfirm = () => {
-        const selected = Array.from(document.querySelectorAll('#categoriesGrid input:checked')).map(cb => cb.value);
+        const selected = Array.from(document.querySelectorAll('#categoriesGrid input:checked')).map(cb => parseInt(cb.value));
         document.getElementById('categoriesModal').classList.remove('active');
         confirmBtn.removeEventListener('click', handleConfirm);
         cancelBtn.removeEventListener('click', handleCancel);
@@ -908,7 +965,7 @@
     function buildCategoriesGrid(selectedCategories = []){
       const grid = document.getElementById('categoriesGrid');
       grid.innerHTML = categories.map(cat => {
-        const checked = selectedCategories.includes(cat.id.toString());
+        const checked = selectedCategories.includes(cat.id);
         return `
           <label class="category-checkbox">
             <input type="checkbox" value="${cat.id}" ${checked ? 'checked' : ''}>
@@ -960,8 +1017,8 @@
     function buildCategoriesList(){
       const list = document.getElementById('categoriesList');
       list.innerHTML = categories.map((cat, index) => `
-        <div class="category-item" draggable="true" ondragstart="dragStart(event, ${index})" ondragover="dragOver(event)" ondrop="drop(event, ${index})" ondragend="dragEnd(event)">
-          <div class="category-preview" style="background: ${cat.color}">${cat.nome.charAt(0).toUpperCase()}</div>
+        <div class="category-item" onclick="setFilter('category', ${cat.id})" draggable="true" ondragstart="dragStart(event, ${index})" ondragover="dragOver(event)" ondrop="drop(event, ${index})" ondragend="dragEnd(event)">
+          <div class="category-preview" style="background: ${cat.color}">${escapeHtml(cat.nome).charAt(0).toUpperCase()}</div>
           <div class="category-inputs">
             <input type="text" class="category-name" value="${escapeHtml(cat.nome)}" onchange="updateCategoryName(${cat.id}, this.value)">
             <div class="color-picker-wrap">
@@ -971,14 +1028,10 @@
           </div>
           <div class="category-controls">
             <span class="category-drag" draggable="true" title="Trascina per riordinare">⋮⋮</span>
-            <button class="category-remove" onclick="removeCategory(${cat.id})" title="Elimina">✕</button>
+            <button class="category-remove" onclick="event.stopPropagation(); removeCategory(${cat.id})" title="Elimina">✕</button>
           </div>
         </div>
-      `).join('') + `
-        <div style="text-align:center; padding:20px; color:var(--text-soft); font-size:0.9rem;">
-          Trascina per riordinare
-        </div>
-      `;
+      `).join('');
     }
 
     function addNewCategory(){
@@ -997,6 +1050,7 @@
       const cat = categories.find(c => c.id === id);
       if(cat) cat.nome = name;
       saveCategories();
+      updateUIForFilter();
     }
 
     function updateCategoryColor(id, color){
@@ -1004,6 +1058,7 @@
       if(cat) cat.color = color;
       saveCategories();
       render();
+      updateUIForFilter();
     }
 
     function removeCategory(id){
@@ -1016,6 +1071,7 @@
         saveToStorage();
         buildCategoriesList();
         render();
+        updateUIForFilter();
       }
     }
 
@@ -1043,7 +1099,6 @@
       draggedIndex = null;
     }
 
-    // Resto delle funzioni legenda invariate...
     function switchLegendaTab(tab){
       currentLegendaTab = tab;
       document.getElementById('drinkTab').classList.toggle('active', tab === 'drink');
@@ -1153,15 +1208,15 @@
     function createDrink(){
       openTypeModal((tipo) => {
         const nome = prompt('Nome del drink:');
-        if(!nome) return;
+        if(!nome?.trim()) return;
         openCategoriesModal([], (categorie) => {
           openIngredientsModal('', (ingr) => {
             openPreparationModal('', (istr) => {
               drinks.unshift({
                 id: Date.now(),
-                nome,
+                nome: nome.trim(),
                 tipo,
-                categorie: categorie.map(id => parseInt(id)),
+                categorie: categorie || [],
                 ingredienti: ingr,
                 istruzioni: istr,
                 data: new Date().toLocaleDateString('it-IT')
@@ -1178,14 +1233,14 @@
       const d = drinks.find(x => x.id === id);
       if(!d) return;
       const nome = prompt('Nome del drink:', d.nome);
-      if(!nome) return;
+      if(!nome?.trim()) return;
       openCategoriesModal(d.categorie || [], (categorie) => {
-        openIngredientsModal(d.ingredienti, (ingr) => {
-          openPreparationModal(d.istruzioni, (istr) => {
+        openIngredientsModal(d.ingredienti || '', (ingr) => {
+          openPreparationModal(d.istruzioni || '', (istr) => {
             const drink = drinks.find(x => x.id === id);
             if(drink){
-              drink.nome = nome;
-              drink.categorie = categorie.map(id => parseInt(id));
+              drink.nome = nome.trim();
+              drink.categorie = categorie || [];
               drink.ingredienti = ingr;
               drink.istruzioni = istr;
               drink.data = new Date().toLocaleDateString('it-IT');
@@ -1224,24 +1279,31 @@
       reader.onload = e => {
         try{
           const imported = JSON.parse(e.target.result);
-          if(!confirm(`Sostituire i ${drinks.length} drink e ${categories.length} categorie attuali con ${imported.drinks?.length || 0} drink e ${imported.categories?.length || 0} categorie dal file?`)) return;
+          const drinkCount = imported.drinks?.length || 0;
+          const catCount = imported.categories?.length || 0;
           
-          drinks = imported.drinks?.map(d => ({
-            id: d.id || Date.now()+Math.random(),
-            nome: d.nome || 'Senza nome',
+          if(!confirm(`Importare ${drinkCount} drink e ${catCount} categorie?`)) return;
+          
+          // Importa drink con gestione sicura delle categorie mancanti
+          drinks = (imported.drinks || []).map(d => ({
+            id: d.id || Date.now() + Math.random(),
+            nome: d.nome?.trim() || 'Senza nome',
             tipo: d.tipo || 'drink',
-            categorie: d.categorie || [],
+            categorie: Array.isArray(d.categorie) ? d.categorie.filter(cId => categories.find(c => c.id === cId) || imported.categories?.find(c => c.id === cId)) : [],
             ingredienti: d.ingredienti || '',
             istruzioni: d.istruzioni || '',
             data: d.data || new Date().toLocaleDateString('it-IT')
-          })) || [];
+          }));
           
-          categories = imported.categories?.map((c, i) => ({
-            id: c.id || Date.now() + i,
-            nome: c.nome || 'Categoria',
-            color: c.color || '#FF6B6B',
-            position: i
-          })) || [];
+          // Importa categorie
+          if(imported.categories && Array.isArray(imported.categories)){
+            categories = imported.categories.map((c, i) => ({
+              id: c.id || Date.now() + i,
+              nome: c.nome?.trim() || 'Categoria',
+              color: c.color || '#FF6B6B',
+              position: i
+            }));
+          }
           
           saveToStorage();
         }catch{
@@ -1265,26 +1327,35 @@
       const listEl = document.getElementById('list');
       const q = document.getElementById('search').value.trim().toLowerCase();
       
-      if(!q && !hasSearched){
+      if(!q && !hasSearched && !currentFilter){
         listEl.innerHTML = `
           <div class="empty">
             <span class="emoji">🥂</span>
-            <p>Scrivi il nome di un drink per cercarlo.</p>
+            <p>Scrivi il nome di un drink per cercarlo o usa le categorie.</p>
           </div>`;
         document.getElementById('counter').textContent = '0';
         return;
       }
 
-      const filtered = drinks.filter(d =>
-        !q || d.nome.toLowerCase().includes(q)
-      );
+      let filtered = drinks;
+
+      // Applica filtro categoria
+      if(currentFilter && currentFilter.type === 'category'){
+        filtered = filtered.filter(d => d.categorie && d.categorie.includes(currentFilter.id));
+      }
+
+      // Applica ricerca testo
+      if(q){
+        filtered = filtered.filter(d => d.nome.toLowerCase().includes(q));
+      }
+
       document.getElementById('counter').textContent = filtered.length;
 
       if(filtered.length === 0){
         listEl.innerHTML = `
           <div class="empty">
             <span class="emoji">🍸</span>
-            <p>Nessun drink trovato.</p>
+            <p>${currentFilter ? 'Nessun drink in questa categoria.' : 'Nessun drink trovato.'}</p>
           </div>`;
         return;
       }
@@ -1296,7 +1367,7 @@
         const catTags = (d.categorie || []).map(catId => {
           const cat = categories.find(c => c.id === catId);
           return cat ? `<span class="category-tag" style="background: ${cat.color}">${escapeHtml(cat.nome)}</span>` : '';
-        }).join('');
+        }).filter(tag => tag).join('');
         
         return `
         <article class="card">
@@ -1332,6 +1403,7 @@
     }
 
     function escapeHtml(str){
+      if(!str) return '';
       return String(str)
         .replace(/&/g,'&amp;')
         .replace(/</g,'&lt;')
@@ -1345,11 +1417,14 @@
     document.getElementById('search').addEventListener('input', (e) => {
       if(e.target.value.trim().length > 0){
         hasSearched = true;
+        currentFilter = null; // Clear category filter when searching
       }
       render();
+      updateUIForFilter();
     });
 
     document.getElementById('categoriesBtn').addEventListener('click', openManageCategoriesModal);
+    document.getElementById('addCategoryBtn').addEventListener('click', addNewCategory);
 
     document.getElementById('menuBtn').addEventListener('click', (e) => {
       e.stopPropagation();
@@ -1358,6 +1433,9 @@
       const bar = document.createElement('div');
       bar.className = 'backup-bar';
       bar.innerHTML = `
+        <button class="backup-btn" id="clearFilterBtn" style="display:${currentFilter ? 'flex' : 'none'};">
+          <span class="icon">❌</span><span>${currentFilter?.type === 'category' ? 'Pulisci filtro' : 'Pulisci'}</span>
+        </button>
         <button class="backup-btn" id="legendBtn">
           <span class="icon">📋</span><span>Legenda</span>
         </button>
@@ -1368,6 +1446,8 @@
           <span class="icon">📥</span><span>Ripristina</span>
         </button>`;
       document.querySelector('.fab-wrap').prepend(bar);
+      
+      document.getElementById('clearFilterBtn').onclick = clearFilter;
       document.getElementById('legendBtn').onclick = (e) => { e.stopPropagation(); openLegenda(); };
       document.getElementById('exportBtn').onclick = exportDrinks;
       document.getElementById('importBtn').onclick = () => {
@@ -1375,11 +1455,10 @@
       };
     });
 
-    // Modal event listeners
-    document.getElementById('addCategoryBtn').addEventListener('click', addNewCategory);
     document.getElementById('saveCategoriesBtn').addEventListener('click', () => {
       document.getElementById('manageCategoriesModal').classList.remove('active');
     });
+    
     document.getElementById('importInput').addEventListener('change', e => {
       const file = e.target.files[0];
       if(file) importDrinks(file);
@@ -1388,6 +1467,7 @@
 
     loadFromStorage();
     render();
+    updateUIForFilter();
   </script>
 </body>
 </html>
