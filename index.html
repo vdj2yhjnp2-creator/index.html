@@ -287,7 +287,7 @@
       cursor:pointer;
     }
     .backup-btn span.icon{font-size:0.9rem;}
-    /* Modal */
+    /* Modal ingredienti */
     .modal-overlay{
       display:none;
       position:fixed;
@@ -351,6 +351,66 @@
       background:rgba(155,175,139,0.1);
       color:var(--mint-dark);
     }
+    /* Modal Legenda */
+    .legend-overlay{
+      display:none;
+      position:fixed;
+      top:0;left:0;right:0;bottom:0;
+      background:rgba(0,0,0,0.5);
+      z-index:100;
+      justify-content:center;
+      align-items:flex-end;
+    }
+    .legend-overlay.active{display:flex;}
+    .legend-content{
+      background:#fff;
+      border-radius:20px 20px 0 0;
+      padding:20px;
+      width:100%;
+      max-width:520px;
+      box-shadow:0 -10px 30px rgba(0,0,0,0.2);
+      max-height:70vh;
+      overflow-y:auto;
+    }
+    .legend-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:16px;
+      font-size:1.1rem;
+      font-weight:600;
+      color:var(--mint-dark);
+    }
+    .legend-close{
+      background:none;
+      border:none;
+      font-size:1.3rem;
+      cursor:pointer;
+      color:var(--text-soft);
+    }
+    .legend-list{
+      list-style:none;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .legend-item{
+      padding:12px;
+      background:rgba(155,175,139,0.08);
+      border-left:4px solid var(--mint-main);
+      border-radius:8px;
+      cursor:pointer;
+      transition:all .12s ease;
+    }
+    .legend-item:hover{
+      background:rgba(155,175,139,0.15);
+      transform:translateX(4px);
+    }
+    .legend-item-name{
+      font-weight:500;
+      color:var(--mint-dark);
+      font-size:0.95rem;
+    }
     @media (max-width:480px){
       .app{border-radius:20px;}
       .header h1{font-size:1.5rem;}
@@ -382,7 +442,7 @@
       <button class="fab-main" id="newBtn">
         <span>＋ Nuovo drink</span>
       </button>
-      <button class="fab-secondary" id="menuBackupBtn">☰</button>
+      <button class="fab-secondary" id="menuBtn">☰</button>
     </footer>
   </div>
 
@@ -398,14 +458,23 @@
     </div>
   </div>
 
+  <!-- Modal Legenda -->
+  <div id="legendModal" class="legend-overlay">
+    <div class="legend-content">
+      <div class="legend-header">
+        Legenda
+        <button class="legend-close" id="closeLegendBtn">✕</button>
+      </div>
+      <ul id="legendList" class="legend-list"></ul>
+    </div>
+  </div>
+
   <input type="file" id="importInput" accept=".json" style="display:none" />
 
   <script>
     const STORAGE_KEY = 'mintPocketDrinks_v1';
     let drinks = [];
     let hasSearched = false;
-    let currentEditId = null;
-    let pendingDrinkData = null;
 
     function loadFromStorage(){
       try{
@@ -443,6 +512,34 @@
       
       confirmBtn.addEventListener('click', handleConfirm);
       cancelBtn.addEventListener('click', handleCancel);
+    }
+
+    function openLegenda(){
+      const sorted = [...drinks].sort((a,b) => a.nome.localeCompare(b.nome));
+      const legendList = document.getElementById('legendList');
+      
+      if(sorted.length === 0){
+        legendList.innerHTML = '<li style="text-align:center;padding:20px;color:var(--text-soft)">Nessun drink salvato</li>';
+      } else {
+        legendList.innerHTML = sorted.map(d => `
+          <li class="legend-item" onclick="searchDrink('${escapeHtml(d.nome)}')">
+            <div class="legend-item-name">${escapeHtml(d.nome)}</div>
+          </li>
+        `).join('');
+      }
+      
+      document.getElementById('legendModal').classList.add('active');
+    }
+
+    function closeLegenda(){
+      document.getElementById('legendModal').classList.remove('active');
+    }
+
+    function searchDrink(nome){
+      document.getElementById('search').value = nome;
+      hasSearched = true;
+      closeLegenda();
+      render();
     }
 
     function createDrink(){
@@ -597,12 +694,15 @@
       render();
     });
 
-    document.getElementById('menuBackupBtn').addEventListener('click',()=>{
+    document.getElementById('menuBtn').addEventListener('click',()=>{
       const existing = document.querySelector('.backup-bar');
       if(existing){existing.remove();return;}
       const bar = document.createElement('div');
       bar.className = 'backup-bar';
       bar.innerHTML = `
+        <button class="backup-btn" id="legendBtn">
+          <span class="icon">📋</span><span>Legenda</span>
+        </button>
         <button class="backup-btn" id="exportBtn">
           <span class="icon">📤</span><span>Backup</span>
         </button>
@@ -610,11 +710,14 @@
           <span class="icon">📥</span><span>Ripristina</span>
         </button>`;
       document.querySelector('.fab-wrap').prepend(bar);
+      document.getElementById('legendBtn').onclick = openLegenda;
       document.getElementById('exportBtn').onclick = exportDrinks;
       document.getElementById('importBtn').onclick = () => {
         document.getElementById('importInput').click();
       };
     });
+
+    document.getElementById('closeLegendBtn').addEventListener('click',closeLegenda);
 
     document.getElementById('importInput').addEventListener('change',e=>{
       const file = e.target.files[0];
