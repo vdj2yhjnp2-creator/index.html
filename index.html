@@ -55,12 +55,35 @@
       font-size:0.8rem;
       opacity:0.9;
     }
+    .header-actions{
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
     .tag{
       padding:6px 10px;
       border-radius:999px;
       background:rgba(247,244,239,0.16);
       border:1px solid rgba(247,244,239,0.45);
       font-size:0.72rem;
+    }
+    .categories-btn{
+      background:rgba(255,255,255,0.2);
+      border:1px solid rgba(255,255,255,0.3);
+      border-radius:12px;
+      padding:8px 12px;
+      color:#fff;
+      font-size:0.8rem;
+      font-weight:500;
+      cursor:pointer;
+      transition:all .12s ease;
+      display:flex;
+      align-items:center;
+      gap:4px;
+    }
+    .categories-btn:hover{
+      background:rgba(255,255,255,0.3);
+      transform:translateY(-1px);
     }
     .bar{
       padding:10px 16px 14px;
@@ -144,6 +167,19 @@
       font-weight:600;
       font-size:1.02rem;
       color:var(--mint-dark);
+    }
+    .card-categories{
+      display:flex;
+      flex-wrap:wrap;
+      gap:4px;
+      margin-top:2px;
+    }
+    .category-tag{
+      padding:2px 8px;
+      border-radius:6px;
+      font-size:0.7rem;
+      font-weight:500;
+      color:#fff;
     }
     .card-date{
       font-size:0.72rem;
@@ -357,6 +393,46 @@
       border-color:var(--mint-main);
       box-shadow:0 0 0 3px rgba(155,175,139,0.25);
     }
+    .categories-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(100px,1fr));
+      gap:8px;
+      margin-bottom:12px;
+      max-height:200px;
+      overflow-y:auto;
+    }
+    .category-checkbox{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      padding:8px;
+      border-radius:8px;
+      background:rgba(155,175,139,0.08);
+      border:2px solid transparent;
+      cursor:pointer;
+      transition:all .12s ease;
+    }
+    .category-checkbox:hover{
+      background:rgba(155,175,139,0.15);
+    }
+    .category-checkbox input:checked + .category-label{
+      background:var(--category-color);
+      color:#fff;
+      border-color:var(--category-color);
+    }
+    .category-label{
+      flex:1;
+      padding:6px 8px;
+      border-radius:6px;
+      font-size:0.85rem;
+      font-weight:500;
+      border:1px solid rgba(155,175,139,0.3);
+      background:#fff;
+      cursor:pointer;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
     .modal-actions{
       display:flex;
       gap:10px;
@@ -379,6 +455,99 @@
     .modal-btn-cancel{
       background:rgba(155,175,139,0.1);
       color:var(--mint-dark);
+    }
+    /* Modal Categories Management */
+    .categories-modal-content{
+      max-height:70vh;
+      overflow-y:auto;
+    }
+    .category-item{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:12px;
+      background:rgba(155,175,139,0.08);
+      border-radius:12px;
+      margin-bottom:8px;
+      gap:8px;
+    }
+    .category-preview{
+      width:24px;
+      height:24px;
+      border-radius:6px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:600;
+      color:#fff;
+      font-size:0.8rem;
+    }
+    .category-inputs{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .category-name{
+      padding:8px;
+      border:1px solid rgba(155,175,139,0.45);
+      border-radius:8px;
+      font-size:0.9rem;
+    }
+    .color-picker-wrap{
+      position:relative;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .color-preview{
+      width:32px;
+      height:32px;
+      border-radius:8px;
+      border:2px solid rgba(0,0,0,0.1);
+      cursor:pointer;
+    }
+    .color-input{
+      flex:1;
+      padding:8px;
+      border:1px solid rgba(155,175,139,0.45);
+      border-radius:8px;
+      font-size:0.9rem;
+    }
+    .category-controls{
+      display:flex;
+      gap:4px;
+    }
+    .category-drag{
+      cursor:move;
+      font-size:1.2rem;
+      opacity:0.6;
+      padding:4px;
+    }
+    .category-drag:hover{opacity:1;}
+    .category-remove{
+      background:none;
+      border:none;
+      color:var(--text-soft);
+      font-size:1.1rem;
+      cursor:pointer;
+      padding:4px;
+      border-radius:4px;
+    }
+    .category-remove:hover{
+      background:rgba(217,83,79,0.1);
+      color:#d9534f;
+    }
+    .add-category-btn{
+      background:var(--mint-main);
+      color:#fff;
+      border:none;
+      padding:10px 16px;
+      border-radius:12px;
+      font-weight:600;
+      cursor:pointer;
+      width:100%;
+      margin-top:8px;
     }
     /* Modal Legenda */
     .legend-overlay{
@@ -527,6 +696,7 @@
       .app{border-radius:20px;}
       .header h1{font-size:1.5rem;}
       .list{padding-bottom:78px;}
+      .categories-grid{grid-template-columns:repeat(2,1fr);}
     }
   </style>
 </head>
@@ -537,7 +707,10 @@
         <h1>Mint Pocket</h1>
         <span class="sub">Il taccuino dei tuoi drink</span>
       </div>
-      <div class="tag">offline • questo dispositivo</div>
+      <div class="header-actions">
+        <div class="tag">offline • questo dispositivo</div>
+        <button class="categories-btn" id="categoriesBtn">🏷️ Categorie</button>
+      </div>
     </header>
 
     <section class="bar">
@@ -574,11 +747,38 @@
     </div>
   </div>
 
+  <!-- Modal per categorie -->
+  <div id="categoriesModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-title">Seleziona categorie</div>
+      <div class="categories-grid" id="categoriesGrid"></div>
+      <div class="modal-actions">
+        <button class="modal-btn modal-btn-cancel" id="cancelCategoriesBtn">Annulla</button>
+        <button class="modal-btn modal-btn-confirm" id="confirmCategoriesBtn">Continua</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal per gestione categorie -->
+  <div id="manageCategoriesModal" class="modal-overlay">
+    <div class="modal-content categories-modal-content">
+      <div class="modal-title">Gestione Categorie</div>
+      <div id="categoriesList"></div>
+      <button class="add-category-btn" id="addCategoryBtn">➕ Nuova Categoria</button>
+      <div class="modal-actions">
+        <button class="modal-btn modal-btn-confirm" id="saveCategoriesBtn">Salva</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal per ingredienti -->
   <div id="ingredientsModal" class="modal-overlay">
     <div class="modal-content">
       <div class="modal-title">Ingredienti</div>
-      <textarea id="ingredientsTextarea" class="modal-textarea" placeholder="Scrivi ogni ingrediente su una nuova riga:&#10;3cl gin&#10;3cl vermouth dry&#10;1 dash angostura"></textarea>
+      <textarea id="ingredientsTextarea" class="modal-textarea" placeholder="Scrivi ogni ingrediente su una nuova riga:
+3cl gin
+3cl vermouth dry
+1 dash angostura"></textarea>
       <div class="modal-actions">
         <button class="modal-btn modal-btn-cancel" id="cancelIngredientsBtn">Annulla</button>
         <button class="modal-btn modal-btn-confirm" id="confirmIngredientsBtn">Salva</button>
@@ -620,10 +820,13 @@
 
   <script>
     const STORAGE_KEY = 'mintPocketDrinks_v1';
+    const CATEGORIES_KEY = 'mintPocketCategories_v1';
     let drinks = [];
+    let categories = [];
     let hasSearched = false;
     let currentLegendaTab = 'drink';
     let pendingDrinkData = null;
+    let editingDrinkId = null;
 
     function loadFromStorage(){
       try{
@@ -632,10 +835,22 @@
       }catch(e){
         drinks = [];
       }
+      try{
+        const raw = localStorage.getItem(CATEGORIES_KEY);
+        categories = raw ? JSON.parse(raw) : [];
+      }catch(e){
+        categories = [];
+      }
     }
+
     function saveToStorage(){
       localStorage.setItem(STORAGE_KEY, JSON.stringify(drinks));
+      localStorage.setItem(CATEGORIES_KEY, JSON.stringify(categories));
       render();
+    }
+
+    function saveCategories(){
+      localStorage.setItem(CATEGORIES_KEY, JSON.stringify(categories));
     }
 
     function openTypeModal(callback){
@@ -663,6 +878,44 @@
       
       confirmBtn.addEventListener('click', handleConfirm);
       cancelBtn.addEventListener('click', handleCancel);
+    }
+
+    function openCategoriesModal(selectedCategories = [], callback){
+      buildCategoriesGrid(selectedCategories);
+      document.getElementById('categoriesModal').classList.add('active');
+      
+      const confirmBtn = document.getElementById('confirmCategoriesBtn');
+      const cancelBtn = document.getElementById('cancelCategoriesBtn');
+      
+      const handleConfirm = () => {
+        const selected = Array.from(document.querySelectorAll('#categoriesGrid input:checked')).map(cb => cb.value);
+        document.getElementById('categoriesModal').classList.remove('active');
+        confirmBtn.removeEventListener('click', handleConfirm);
+        cancelBtn.removeEventListener('click', handleCancel);
+        callback(selected);
+      };
+      
+      const handleCancel = () => {
+        document.getElementById('categoriesModal').classList.remove('active');
+        confirmBtn.removeEventListener('click', handleConfirm);
+        cancelBtn.removeEventListener('click', handleCancel);
+      };
+      
+      confirmBtn.addEventListener('click', handleConfirm);
+      cancelBtn.addEventListener('click', handleCancel);
+    }
+
+    function buildCategoriesGrid(selectedCategories = []){
+      const grid = document.getElementById('categoriesGrid');
+      grid.innerHTML = categories.map(cat => {
+        const checked = selectedCategories.includes(cat.id.toString());
+        return `
+          <label class="category-checkbox">
+            <input type="checkbox" value="${cat.id}" ${checked ? 'checked' : ''}>
+            <span class="category-label" style="--category-color: ${cat.color}">${escapeHtml(cat.nome)}</span>
+          </label>
+        `;
+      }).join('');
     }
 
     function openModal(modalId, defaultValue = '', callback){
@@ -699,6 +952,98 @@
       openModal('preparation', defaultValue, callback);
     }
 
+    function openManageCategoriesModal(){
+      buildCategoriesList();
+      document.getElementById('manageCategoriesModal').classList.add('active');
+    }
+
+    function buildCategoriesList(){
+      const list = document.getElementById('categoriesList');
+      list.innerHTML = categories.map((cat, index) => `
+        <div class="category-item" draggable="true" ondragstart="dragStart(event, ${index})" ondragover="dragOver(event)" ondrop="drop(event, ${index})" ondragend="dragEnd(event)">
+          <div class="category-preview" style="background: ${cat.color}">${cat.nome.charAt(0).toUpperCase()}</div>
+          <div class="category-inputs">
+            <input type="text" class="category-name" value="${escapeHtml(cat.nome)}" onchange="updateCategoryName(${cat.id}, this.value)">
+            <div class="color-picker-wrap">
+              <div class="color-preview" style="background: ${cat.color}" onclick="this.nextElementSibling.click()"></div>
+              <input type="color" class="color-input" value="${cat.color}" onchange="updateCategoryColor(${cat.id}, this.value)">
+            </div>
+          </div>
+          <div class="category-controls">
+            <span class="category-drag" draggable="true" title="Trascina per riordinare">⋮⋮</span>
+            <button class="category-remove" onclick="removeCategory(${cat.id})" title="Elimina">✕</button>
+          </div>
+        </div>
+      `).join('') + `
+        <div style="text-align:center; padding:20px; color:var(--text-soft); font-size:0.9rem;">
+          Trascina per riordinare
+        </div>
+      `;
+    }
+
+    function addNewCategory(){
+      const newId = Date.now();
+      categories.push({
+        id: newId,
+        nome: 'Nuova Categoria',
+        color: '#FF6B6B',
+        position: categories.length
+      });
+      saveCategories();
+      buildCategoriesList();
+    }
+
+    function updateCategoryName(id, name){
+      const cat = categories.find(c => c.id === id);
+      if(cat) cat.nome = name;
+      saveCategories();
+    }
+
+    function updateCategoryColor(id, color){
+      const cat = categories.find(c => c.id === id);
+      if(cat) cat.color = color;
+      saveCategories();
+      render();
+    }
+
+    function removeCategory(id){
+      if(confirm('Eliminare questa categoria? I drink che la usano perderanno questo riferimento.')){
+        categories = categories.filter(c => c.id !== id);
+        drinks.forEach(drink => {
+          drink.categorie = drink.categorie ? drink.categorie.filter(c => c !== id) : [];
+        });
+        saveCategories();
+        saveToStorage();
+        buildCategoriesList();
+        render();
+      }
+    }
+
+    let draggedIndex = null;
+    function dragStart(e, index){
+      draggedIndex = index;
+      e.target.style.opacity = '0.5';
+    }
+    function dragOver(e){
+      e.preventDefault();
+    }
+    function drop(e, index){
+      e.preventDefault();
+      if(draggedIndex !== null && draggedIndex !== index){
+        const draggedCat = categories[draggedIndex];
+        categories.splice(draggedIndex, 1);
+        categories.splice(index, 0, draggedCat);
+        categories.forEach((cat, i) => cat.position = i);
+        saveCategories();
+        buildCategoriesList();
+      }
+    }
+    function dragEnd(e){
+      e.target.style.opacity = '1';
+      draggedIndex = null;
+    }
+
+    // Resto delle funzioni legenda invariate...
     function switchLegendaTab(tab){
       currentLegendaTab = tab;
       document.getElementById('drinkTab').classList.toggle('active', tab === 'drink');
@@ -809,34 +1154,45 @@
       openTypeModal((tipo) => {
         const nome = prompt('Nome del drink:');
         if(!nome) return;
-        openIngredientsModal('', (ingr) => {
-          openPreparationModal('', (istr) => {
-            drinks.unshift({
-              id: Date.now(),
-              nome,
-              tipo,
-              ingredienti: ingr,
-              istruzioni: istr,
-              data: new Date().toLocaleDateString('it-IT')
+        openCategoriesModal([], (categorie) => {
+          openIngredientsModal('', (ingr) => {
+            openPreparationModal('', (istr) => {
+              drinks.unshift({
+                id: Date.now(),
+                nome,
+                tipo,
+                categorie: categorie.map(id => parseInt(id)),
+                ingredienti: ingr,
+                istruzioni: istr,
+                data: new Date().toLocaleDateString('it-IT')
+              });
+              saveToStorage();
             });
-            saveToStorage();
           });
         });
       });
     }
 
     function editDrink(id){
+      editingDrinkId = id;
       const d = drinks.find(x => x.id === id);
       if(!d) return;
       const nome = prompt('Nome del drink:', d.nome);
       if(!nome) return;
-      openIngredientsModal(d.ingredienti, (ingr) => {
-        openPreparationModal(d.istruzioni, (istr) => {
-          d.nome = nome;
-          d.ingredienti = ingr;
-          d.istruzioni = istr;
-          d.data = new Date().toLocaleDateString('it-IT');
-          saveToStorage();
+      openCategoriesModal(d.categorie || [], (categorie) => {
+        openIngredientsModal(d.ingredienti, (ingr) => {
+          openPreparationModal(d.istruzioni, (istr) => {
+            const drink = drinks.find(x => x.id === id);
+            if(drink){
+              drink.nome = nome;
+              drink.categorie = categorie.map(id => parseInt(id));
+              drink.ingredienti = ingr;
+              drink.istruzioni = istr;
+              drink.data = new Date().toLocaleDateString('it-IT');
+            }
+            saveToStorage();
+            editingDrinkId = null;
+          });
         });
       });
     }
@@ -850,7 +1206,11 @@
     }
 
     function exportDrinks(){
-      const blob = new Blob([JSON.stringify(drinks,null,2)],{type:'application/json'});
+      const exportData = {
+        drinks,
+        categories
+      };
+      const blob = new Blob([JSON.stringify(exportData,null,2)],{type:'application/json'});
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       a.download = `mint-pocket-${new Date().toISOString().slice(0,10)}.json`;
@@ -864,16 +1224,25 @@
       reader.onload = e => {
         try{
           const imported = JSON.parse(e.target.result);
-          if(!Array.isArray(imported)) throw new Error();
-          if(!confirm(`Sostituire i ${drinks.length} drink attuali con ${imported.length} dal file?`)) return;
-          drinks = imported.map(d => ({
+          if(!confirm(`Sostituire i ${drinks.length} drink e ${categories.length} categorie attuali con ${imported.drinks?.length || 0} drink e ${imported.categories?.length || 0} categorie dal file?`)) return;
+          
+          drinks = imported.drinks?.map(d => ({
             id: d.id || Date.now()+Math.random(),
             nome: d.nome || 'Senza nome',
             tipo: d.tipo || 'drink',
+            categorie: d.categorie || [],
             ingredienti: d.ingredienti || '',
             istruzioni: d.istruzioni || '',
             data: d.data || new Date().toLocaleDateString('it-IT')
-          }));
+          })) || [];
+          
+          categories = imported.categories?.map((c, i) => ({
+            id: c.id || Date.now() + i,
+            nome: c.nome || 'Categoria',
+            color: c.color || '#FF6B6B',
+            position: i
+          })) || [];
+          
           saveToStorage();
         }catch{
           alert('File non valido.');
@@ -924,10 +1293,18 @@
         const ingredienti = parseIngredienti(d.ingredienti);
         const preparation = parsePreparation(d.istruzioni);
         const typeIcon = d.tipo === 'prebatch' ? '🧃' : '🥃';
+        const catTags = (d.categorie || []).map(catId => {
+          const cat = categories.find(c => c.id === catId);
+          return cat ? `<span class="category-tag" style="background: ${cat.color}">${escapeHtml(cat.nome)}</span>` : '';
+        }).join('');
+        
         return `
         <article class="card">
           <div class="card-top">
-            <div class="card-name">${typeIcon} ${escapeHtml(d.nome)}</div>
+            <div>
+              <div class="card-name">${typeIcon} ${escapeHtml(d.nome)}</div>
+              ${catTags ? `<div class="card-categories">${catTags}</div>` : ''}
+            </div>
             <span class="card-date">${escapeHtml(d.data)}</span>
           </div>
           <div class="card-body">
@@ -950,7 +1327,8 @@
             <button class="btn btn-primary" onclick="deleteDrink(${d.id})">🗑️ Elimina</button>
           </div>
         </article>
-      `}).join('');
+      `;
+      }).join('');
     }
 
     function escapeHtml(str){
@@ -962,15 +1340,18 @@
         .replace(/'/g,'&#39;');
     }
 
-    document.getElementById('newBtn').addEventListener('click',createDrink);
-    document.getElementById('search').addEventListener('input',(e)=>{
+    // Event Listeners
+    document.getElementById('newBtn').addEventListener('click', createDrink);
+    document.getElementById('search').addEventListener('input', (e) => {
       if(e.target.value.trim().length > 0){
         hasSearched = true;
       }
       render();
     });
 
-    document.getElementById('menuBtn').addEventListener('click',(e)=>{
+    document.getElementById('categoriesBtn').addEventListener('click', openManageCategoriesModal);
+
+    document.getElementById('menuBtn').addEventListener('click', (e) => {
       e.stopPropagation();
       const existing = document.querySelector('.backup-bar');
       if(existing){existing.remove();return;}
@@ -994,10 +1375,15 @@
       };
     });
 
-    document.getElementById('importInput').addEventListener('change',e=>{
+    // Modal event listeners
+    document.getElementById('addCategoryBtn').addEventListener('click', addNewCategory);
+    document.getElementById('saveCategoriesBtn').addEventListener('click', () => {
+      document.getElementById('manageCategoriesModal').classList.remove('active');
+    });
+    document.getElementById('importInput').addEventListener('change', e => {
       const file = e.target.files[0];
       if(file) importDrinks(file);
-      e.target.value='';
+      e.target.value = '';
     });
 
     loadFromStorage();
