@@ -72,7 +72,7 @@
                     nome: nome,
                     ingredienti: "",
                     istruzioni: "",
-                     new Date().toLocaleDateString()
+                    data: new Date().toLocaleDateString()
                 };
                 tuttiDrinks.push(drink);
                 salvaDrinks();
@@ -100,8 +100,8 @@
                     <p><strong>Istruzioni:</strong> ${drink.istruzioni || 'N/D'}</p>
                     <small>${drink.data}</small>
                     <br>
-                    <button onclick="modifica(${index})">✏ Modifica</button>
-                    <button onclick="elimina(${index})">🗑 Elimina</button>
+                    <button onclick="modifica(${index})">✏️ Modifica</button>
+                    <button onclick="elimina(${index})">🗑️ Elimina</button>
                 </div>
             `;
         }
