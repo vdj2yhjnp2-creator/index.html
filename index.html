@@ -2,890 +2,746 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>Mint Pocket</title>
   <style>
-    :root {
-      --mint-main: #9BAF8B;
-      --mint-dark: #5C6B4F;
-      --mint-light: #E3E9DC;
-      --accent-warm: #D9B18C;
-      --bg-main: #F7F4EF;
-      --text-main: #333333;
-      --text-soft: #6B6B6B;
-      --radius-lg: 18px;
-      --radius-md: 12px;
-      --shadow-soft: 0 10px 25px rgba(0,0,0,0.08);
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: radial-gradient(circle at top, #E8F0E3 0%, #F7F4EF 40%, #F1ECE4 100%);
-      min-height: 100vh;
-      padding: 16px;
-      color: var(--text-main);
-    }
-
-    .app {
-      max-width: 520px;
-      margin: 0 auto;
-      background: rgba(255,255,255,0.96);
-      border-radius: 24px;
-      box-shadow: var(--shadow-soft);
-      overflow: hidden;
-      border: 1px solid rgba(155,175,139,0.25);
-    }
-
-    .header {
-      padding: 22px 20px 16px;
-      background: linear-gradient(135deg, rgba(155,175,139,0.95), rgba(92,107,79,0.98));
-      color: #fff;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .header-title {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .header h1 {
-      font-size: 1.7rem;
-      letter-spacing: 0.03em;
-    }
-
-    .header span.sub {
-      font-size: 0.8rem;
-      opacity: 0.9;
-    }
-
-    .header-actions {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
-    .tag {
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: rgba(247,244,239,0.16);
-      border: 1px solid rgba(247,244,239,0.45);
-      font-size: 0.72rem;
-    }
-
-    .categories-btn {
-      background: rgba(255,255,255,0.2);
-      border: 1px solid rgba(255,255,255,0.3);
-      border-radius: 12px;
-      padding: 8px 12px;
-      color: #fff;
-      font-size: 0.8rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all .12s ease;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .categories-btn:hover {
-      background: rgba(255,255,255,0.3);
-      transform: translateY(-1px);
-    }
-
-    .bar {
-      padding: 10px 16px 14px;
-      background: var(--bg-main);
-      border-bottom: 1px solid rgba(0,0,0,0.03);
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
-    .search-wrap {
-      position: relative;
-      flex: 1;
-    }
-
-    .search-wrap input {
-      width: 100%;
-      padding: 11px 34px 11px 32px;
-      border-radius: 999px;
-      border: 1px solid rgba(155,175,139,0.45);
-      background: #fff;
-      font-size: 0.95rem;
-      color: var(--text-main);
-    }
-
-    .search-wrap input:focus {
-      outline: none;
-      border-color: var(--mint-main);
-      box-shadow: 0 0 0 3px rgba(155,175,139,0.25);
-    }
-
-    .search-icon {
-      position: absolute;
-      left: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 0.9rem;
-      opacity: 0.75;
-    }
-
-    .counter {
-      font-size: 0.8rem;
-      color: var(--text-soft);
-      padding: 2px 6px;
-      border-radius: 999px;
-      background: rgba(227,233,220,0.8);
-    }
-
-    .filter-indicator {
-      position: absolute;
-      right: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: var(--accent-warm);
-      color: #fff;
-      border-radius: 999px;
-      padding: 2px 6px;
-      font-size: 0.7rem;
-      font-weight: 500;
-    }
-
-    .list {
-      padding: 14px 16px 80px;
-      background: linear-gradient(180deg, rgba(227,233,220,0.55), transparent 26px);
-      min-height: 200px;
-    }
-
-    .empty {
-      text-align: center;
-      color: var(--text-soft);
-      padding: 40px 10px 30px;
-      font-size: 0.95rem;
-    }
-
-    .empty span.emoji {
-      font-size: 1.6rem;
-      display: block;
-      margin-bottom: 6px;
-    }
-
-    .card {
-      background: #fff;
-      border-radius: var(--radius-lg);
-      padding: 14px 14px 12px;
-      margin-bottom: 10px;
-      border: 1px solid rgba(155,175,139,0.22);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .card::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 4px;
-      background: linear-gradient(180deg, var(--mint-main), var(--accent-warm));
-    }
-
-    .card-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 8px;
-      margin-bottom: 4px;
-    }
-
-    .card-name {
-      font-weight: 600;
-      font-size: 1.02rem;
-      color: var(--mint-dark);
-    }
-
-    .card-categories {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 4px;
-      margin-top: 2px;
-    }
-
-    .category-tag {
-      padding: 2px 8px;
-      border-radius: 6px;
-      font-size: 0.7rem;
-      font-weight: 500;
-      color: #fff;
-    }
-
-    .card-date {
-      font-size: 0.72rem;
-      color: var(--text-soft);
-      padding: 3px 7px;
-      border-radius: 999px;
-      background: rgba(249,246,240,0.95);
-      border: 1px solid rgba(217,177,140,0.4);
-    }
-
-    .card-body {
-      font-size: 0.88rem;
-      color: var(--text-soft);
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-bottom: 6px;
-    }
-
-    .ingredient-section {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .label {
-      font-size: 0.72rem;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--text-soft);
-    }
-
-    .ingredient-list {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-      margin-left: 0;
-      padding-left: 0;
-    }
-
-    .ingredient-list li {
-      color: var(--text-main);
-      font-size: 0.88rem;
-      padding-left: 12px;
-      position: relative;
-    }
-
-    .ingredient-list li::before {
-      content: '•';
-      position: absolute;
-      left: 0;
-      color: var(--mint-main);
-      font-weight: bold;
-    }
-
-    .preparation-list {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-      margin-left: 0;
-      padding-left: 0;
-    }
-
-    .preparation-list li {
-      color: var(--text-main);
-      font-size: 0.88rem;
-    }
-
-    .value {
-      color: var(--text-main);
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    .actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 6px;
-      margin-top: 4px;
-    }
-
-    .btn {
-      border: none;
-      border-radius: 999px;
-      padding: 7px 12px;
-      font-size: 0.78rem;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
-    }
-
-    .btn:active {
-      transform: scale(0.97);
-    }
-
-    .btn-primary {
-      background: var(--mint-dark);
-      color: #fff;
-      box-shadow: 0 4px 10px rgba(92,107,79,0.45);
-    }
-
-    .btn-primary:hover {
-      background: #4c5b40;
-    }
-
-    .btn-ghost {
-      background: rgba(155,175,139,0.06);
-      color: var(--mint-dark);
-    }
-
-    .btn-ghost:hover {
-      background: rgba(155,175,139,0.13);
-    }
-
-    .fab-wrap {
-      position: sticky;
-      bottom: 0;
-      padding: 10px 16px 14px;
-      background: linear-gradient(180deg, rgba(247,244,239,0), rgba(247,244,239,0.95));
-      border-top: 1px solid rgba(0,0,0,0.03);
-      display: flex;
-      gap: 10px;
-    }
-
-    .fab-main {
-      flex: 1;
-      border-radius: 999px;
-      padding: 11px 16px;
-      border: none;
-      background: linear-gradient(135deg, var(--mint-main), var(--mint-dark));
-      color: #fff;
-      font-weight: 600;
-      font-size: 0.96rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      box-shadow: 0 8px 20px rgba(92,107,79,0.55);
-      cursor: pointer;
-      transition: transform .14s ease, box-shadow .14s ease;
-    }
-
-    .fab-main:active {
-      transform: translateY(1px);
-      box-shadow: 0 4px 10px rgba(92,107,79,0.4);
-    }
-
-    .fab-secondary {
-      width: 46px;
-      border-radius: 999px;
-      border: none;
-      background: #fff;
-      color: var(--mint-dark);
-      box-shadow: 0 6px 14px rgba(0,0,0,0.1);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 1.1rem;
-      z-index: 50;
-      position: relative;
-    }
-
-    .backup-bar {
-      max-height: 200px;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-top: 2px;
-      padding: 8px 0;
-    }
-
-    .backup-btn {
-      font-size: 0.78rem;
-      padding: 10px 12px;
-      border-radius: 999px;
-      border: 1px dashed rgba(155,175,139,0.7);
-      background: rgba(247,244,239,0.9);
-      color: var(--mint-dark);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      cursor: pointer;
-    }
-
-    .backup-btn span.icon {
-      font-size: 0.9rem;
-    }
-
-    /* Modal Base */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.5);
-      z-index: 100;
-      justify-content: center;
-      align-items: flex-end;
-    }
-
-    .modal-overlay.active {
-      display: flex;
-    }
-
-    .modal-overlay:not(.active) {
-      pointer-events: none;
-    }
-
-    .modal-content {
-      background: #fff;
-      border-radius: 20px 20px 0 0;
-      padding: 20px;
-      width: 100%;
-      max-width: 520px;
-      box-shadow: 0 -10px 30px rgba(0,0,0,0.2);
-      max-height: 90vh;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    .modal-title {
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: var(--mint-dark);
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-    }
-
-    .add-category-in-modal {
-      width: 36px; height: 36px;
-      background: var(--mint-main);
-      border: none;
-      border-radius: 999px;
-      color: #fff;
-      font-size: 1.1rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 12px rgba(92,107,79,0.3);
-      transition: all .12s ease;
-    }
-
-    .add-category-in-modal:hover {
-      background: var(--mint-dark);
-      transform: translateY(-1px);
-    }
-
-    .add-category-in-modal:active {
-      transform: translateY(0);
-    }
-
-    .modal-textarea {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid rgba(155,175,139,0.45);
-      border-radius: 12px;
-      font-size: 0.95rem;
-      font-family: inherit;
-      resize: vertical;
-      min-height: 120px;
-      color: var(--text-main);
-    }
-
-    .modal-textarea:focus {
-      outline: none;
-      border-color: var(--mint-main);
-      box-shadow: 0 0 0 3px rgba(155,175,139,0.25);
-    }
-
-    .modal-select {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid rgba(155,175,139,0.45);
-      border-radius: 12px;
-      font-size: 0.95rem;
-      color: var(--text-main);
-      background: #fff;
-      margin-bottom: 12px;
-    }
-
-    .modal-select:focus {
-      outline: none;
-      border-color: var(--mint-main);
-      box-shadow: 0 0 0 3px rgba(155,175,139,0.25);
-    }
-
-    .categories-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-      gap: 8px;
-      margin-bottom: 12px;
-      max-height: 200px;
-      overflow-y: auto;
-    }
-
-    .category-checkbox {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 8px;
-      border-radius: 8px;
-      background: rgba(155,175,139,0.08);
-      border: 2px solid transparent;
-      cursor: pointer;
-      transition: all .12s ease;
-    }
-
-    .category-checkbox:hover {
-      background: rgba(155,175,139,0.15);
-    }
-
-    .category-checkbox input:checked ~ .category-label {
-      background: var(--category-color);
-      color: #fff;
-      border-color: var(--category-color);
-    }
-
-    .category-label {
-      flex: 1;
-      padding: 6px 8px;
-      border-radius: 6px;
-      font-size: 0.85rem;
-      font-weight: 500;
-      border: 1px solid rgba(155,175,139,0.3);
-      background: #fff;
-      cursor: pointer;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .modal-actions {
-      display: flex;
-      gap: 10px;
-      margin-top: 12px;
-    }
-
-    .modal-btn {
-      flex: 1;
-      padding: 10px;
-      border: none;
-      border-radius: 999px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all .12s ease;
-    }
-
-    .modal-btn-confirm {
-      background: var(--mint-dark);
-      color: #fff;
-    }
-
-    .modal-btn-confirm:active {
-      transform: scale(0.98);
-    }
-
-    .modal-btn-cancel {
-      background: rgba(155,175,139,0.1);
-      color: var(--mint-dark);
-    }
-
+    :root{
+      --mint-main:#9BAF8B;
+      --mint-dark:#5C6B4F;
+      --mint-light:#E3E9DC;
+      --accent-warm:#D9B18C;
+      --bg-main:#F7F4EF;
+      --text-main:#333333;
+      --text-soft:#6B6B6B;
+      --radius-lg:18px;
+      --radius-md:12px;
+      --shadow-soft:0 10px 25px rgba(0,0,0,0.08);
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:radial-gradient(circle at top,#E8F0E3 0,#F7F4EF 40%,#F1ECE4 100%);
+      min-height:100vh;
+      padding:16px;
+      color:var(--text-main);
+    }
+    .app{
+      max-width:520px;
+      margin:0 auto;
+      background:rgba(255,255,255,0.96);
+      border-radius:24px;
+      box-shadow:var(--shadow-soft);
+      overflow:hidden;
+      border:1px solid rgba(155,175,139,0.25);
+    }
+    .header{
+      padding:22px 20px 16px;
+      background:linear-gradient(135deg,rgba(155,175,139,0.95),rgba(92,107,79,0.98));
+      color:#fff;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    .header-title{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+    .header h1{
+      font-size:1.7rem;
+      letter-spacing:0.03em;
+    }
+    .header span.sub{
+      font-size:0.8rem;
+      opacity:0.9;
+    }
+    .header-actions{
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+    .tag{
+      padding:6px 10px;
+      border-radius:999px;
+      background:rgba(247,244,239,0.16);
+      border:1px solid rgba(247,244,239,0.45);
+      font-size:0.72rem;
+    }
+    .categories-btn{
+      background:rgba(255,255,255,0.2);
+      border:1px solid rgba(255,255,255,0.3);
+      border-radius:12px;
+      padding:8px 12px;
+      color:#fff;
+      font-size:0.8rem;
+      font-weight:500;
+      cursor:pointer;
+      transition:all .12s ease;
+      display:flex;
+      align-items:center;
+      gap:4px;
+    }
+    .categories-btn:hover{
+      background:rgba(255,255,255,0.3);
+      transform:translateY(-1px);
+    }
+    .bar{
+      padding:10px 16px 14px;
+      background:var(--bg-main);
+      border-bottom:1px solid rgba(0,0,0,0.03);
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+    .search-wrap{
+      position:relative;
+      flex:1;
+    }
+    .search-wrap input{
+      width:100%;
+      padding:11px 34px 11px 32px;
+      border-radius:999px;
+      border:1px solid rgba(155,175,139,0.45);
+      background:#fff;
+      font-size:0.95rem;
+      color:var(--text-main);
+    }
+    .search-wrap input:focus{
+      outline:none;
+      border-color:var(--mint-main);
+      box-shadow:0 0 0 3px rgba(155,175,139,0.25);
+    }
+    .search-icon{
+      position:absolute;
+      left:10px;
+      top:50%;
+      transform:translateY(-50%);
+      font-size:0.9rem;
+      opacity:0.75;
+    }
+    .counter{
+      font-size:0.8rem;
+      color:var(--text-soft);
+      padding:2px 6px;
+      border-radius:999px;
+      background:rgba(227,233,220,0.8);
+    }
+    .filter-indicator{
+      position:absolute;
+      right:10px;
+      top:50%;
+      transform:translateY(-50%);
+      background:var(--accent-warm);
+      color:#fff;
+      border-radius:999px;
+      padding:2px 6px;
+      font-size:0.7rem;
+      font-weight:500;
+    }
+    .list{
+      padding:14px 16px 80px;
+      background:linear-gradient(180deg,rgba(227,233,220,0.55),transparent 26px);
+      min-height:200px;
+    }
+    .empty{
+      text-align:center;
+      color:var(--text-soft);
+      padding:40px 10px 30px;
+      font-size:0.95rem;
+    }
+    .empty span.emoji{font-size:1.6rem;display:block;margin-bottom:6px;}
+    .card{
+      background:#fff;
+      border-radius:var(--radius-lg);
+      padding:14px 14px 12px;
+      margin-bottom:10px;
+      border:1px solid rgba(155,175,139,0.22);
+      position:relative;
+      overflow:hidden;
+    }
+    .card::before{
+      content:"";
+      position:absolute;
+      left:0;
+      top:0;
+      bottom:0;
+      width:4px;
+      background:linear-gradient(180deg,var(--mint-main),var(--accent-warm));
+    }
+    .card-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:8px;
+      margin-bottom:4px;
+    }
+    .card-name{
+      font-weight:600;
+      font-size:1.02rem;
+      color:var(--mint-dark);
+    }
+    .card-categories{
+      display:flex;
+      flex-wrap:wrap;
+      gap:4px;
+      margin-top:2px;
+    }
+    .category-tag{
+      padding:2px 8px;
+      border-radius:6px;
+      font-size:0.7rem;
+      font-weight:500;
+      color:#fff;
+    }
+    .card-date{
+      font-size:0.72rem;
+      color:var(--text-soft);
+      padding:3px 7px;
+      border-radius:999px;
+      background:rgba(249,246,240,0.95);
+      border:1px solid rgba(217,177,140,0.4);
+    }
+    .card-body{
+      font-size:0.88rem;
+      color:var(--text-soft);
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      margin-bottom:6px;
+    }
+    .ingredient-section{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+    }
+    .label{
+      font-size:0.72rem;
+      text-transform:uppercase;
+      letter-spacing:0.06em;
+      color:var(--text-soft);
+    }
+    .ingredient-list{
+      list-style:none;
+      display:flex;
+      flex-direction:column;
+      gap:3px;
+      margin-left:0;
+      padding-left:0;
+    }
+    .ingredient-list li{
+      color:var(--text-main);
+      font-size:0.88rem;
+      padding-left:12px;
+      position:relative;
+    }
+    .ingredient-list li::before{
+      content:"â€¢";
+      position:absolute;
+      left:0;
+      color:var(--mint-main);
+      font-weight:bold;
+    }
+    .preparation-list{
+      list-style:none;
+      display:flex;
+      flex-direction:column;
+      gap:3px;
+      margin-left:0;
+      padding-left:0;
+    }
+    .preparation-list li{
+      color:var(--text-main);
+      font-size:0.88rem;
+    }
+    .value{
+      color:var(--text-main);
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+    .actions{
+      display:flex;
+      justify-content:flex-end;
+      gap:6px;
+      margin-top:4px;
+    }
+    .btn{
+      border:none;
+      border-radius:999px;
+      padding:7px 12px;
+      font-size:0.78rem;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap:4px;
+      transition:transform .12s ease,box-shadow .12s ease,background .12s ease;
+    }
+    .btn:active{transform:scale(0.97);}
+    .btn-primary{
+      background:var(--mint-dark);
+      color:#fff;
+      box-shadow:0 4px 10px rgba(92,107,79,0.45);
+    }
+    .btn-primary:hover{background:#4c5b40;}
+    .btn-ghost{
+      background:rgba(155,175,139,0.06);
+      color:var(--mint-dark);
+    }
+    .btn-ghost:hover{background:rgba(155,175,139,0.13);}
+    .fab-wrap{
+      position:sticky;
+      bottom:0;
+      padding:10px 16px 14px;
+      background:linear-gradient(180deg,rgba(247,244,239,0),rgba(247,244,239,0.95));
+      border-top:1px solid rgba(0,0,0,0.03);
+      display:flex;
+      gap:10px;
+    }
+    .fab-main{
+      flex:1;
+      border-radius:999px;
+      padding:11px 16px;
+      border:none;
+      background:linear-gradient(135deg,var(--mint-main),var(--mint-dark));
+      color:#fff;
+      font-weight:600;
+      font-size:0.96rem;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      box-shadow:0 8px 20px rgba(92,107,79,0.55);
+      cursor:pointer;
+      transition:transform .14s ease,box-shadow .14s ease;
+    }
+    .fab-main:active{transform:translateY(1px);box-shadow:0 4px 10px rgba(92,107,79,0.4);}
+    .fab-secondary{
+      width:46px;
+      border-radius:999px;
+      border:none;
+      background:#fff;
+      color:var(--mint-dark);
+      box-shadow:0 6px 14px rgba(0,0,0,0.1);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      font-size:1.1rem;
+      z-index:50;
+      position:relative;
+    }
+    .backup-bar{
+      max-height:200px;
+      overflow-y:auto;
+      -webkit-overflow-scrolling:touch;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      margin-top:2px;
+      padding:8px 0;
+    }
+    .backup-btn{
+      font-size:0.78rem;
+      padding:10px 12px;
+      border-radius:999px;
+      border:1px dashed rgba(155,175,139,0.7);
+      background:rgba(247,244,239,0.9);
+      color:var(--mint-dark);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+      cursor:pointer;
+    }
+    .backup-btn span.icon{font-size:0.9rem;}
+    /* Modal */
+    .modal-overlay{
+      display:none;
+      position:fixed;
+      top:0;left:0;right:0;bottom:0;
+      background:rgba(0,0,0,0.5);
+      z-index:100;
+      justify-content:center;
+      align-items:flex-end;
+    }
+    .modal-overlay.active{display:flex;}
+    .modal-overlay:not(.active){pointer-events:none;}
+    .modal-content{
+      background:#fff;
+      border-radius:20px 20px 0 0;
+      padding:20px;
+      width:100%;
+      max-width:520px;
+      box-shadow:0 -10px 30px rgba(0,0,0,0.2);
+      max-height:90vh;
+      overflow-y:auto;
+      -webkit-overflow-scrolling:touch;
+    }
+    .modal-title{
+      font-size:1.1rem;
+      font-weight:600;
+      color:var(--mint-dark);
+    }
+    .modal-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:12px;
+    }
+    .add-category-in-modal{
+      width:36px;
+      height:36px;
+      background:var(--mint-main);
+      border:none;
+      border-radius:999px;
+      color:#fff;
+      font-size:1.1rem;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow:0 4px 12px rgba(92,107,79,0.3);
+      transition:all .12s ease;
+    }
+    .add-category-in-modal:hover{
+      background:var(--mint-dark);
+      transform:translateY(-1px);
+    }
+    .add-category-in-modal:active{
+      transform:translateY(0);
+    }
+    .modal-textarea{
+      width:100%;
+      padding:12px;
+      border:1px solid rgba(155,175,139,0.45);
+      border-radius:12px;
+      font-size:0.95rem;
+      font-family:inherit;
+      resize:vertical;
+      min-height:120px;
+      color:var(--text-main);
+    }
+    .modal-textarea:focus{
+      outline:none;
+      border-color:var(--mint-main);
+      box-shadow:0 0 0 3px rgba(155,175,139,0.25);
+    }
+    .modal-select{
+      width:100%;
+      padding:12px;
+      border:1px solid rgba(155,175,139,0.45);
+      border-radius:12px;
+      font-size:0.95rem;
+      color:var(--text-main);
+      background:#fff;
+      margin-bottom:12px;
+    }
+    .modal-select:focus{
+      outline:none;
+      border-color:var(--mint-main);
+      box-shadow:0 0 0 3px rgba(155,175,139,0.25);
+    }
+    .categories-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(100px,1fr));
+      gap:8px;
+      margin-bottom:12px;
+      max-height:200px;
+      overflow-y:auto;
+    }
+    .category-checkbox{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      padding:8px;
+      border-radius:8px;
+      background:rgba(155,175,139,0.08);
+      border:2px solid transparent;
+      cursor:pointer;
+      transition:all .12s ease;
+    }
+    .category-checkbox:hover{
+      background:rgba(155,175,139,0.15);
+    }
+    .category-checkbox input:checked + .category-label{
+      background:var(--category-color);
+      color:#fff;
+      border-color:var(--category-color);
+    }
+    .category-label{
+      flex:1;
+      padding:6px 8px;
+      border-radius:6px;
+      font-size:0.85rem;
+      font-weight:500;
+      border:1px solid rgba(155,175,139,0.3);
+      background:#fff;
+      cursor:pointer;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .modal-actions{
+      display:flex;
+      gap:10px;
+      margin-top:12px;
+    }
+    .modal-btn{
+      flex:1;
+      padding:10px;
+      border:none;
+      border-radius:999px;
+      font-weight:600;
+      cursor:pointer;
+      transition:all .12s ease;
+    }
+    .modal-btn-confirm{
+      background:var(--mint-dark);
+      color:#fff;
+    }
+    .modal-btn-confirm:active{transform:scale(0.98);}
+    .modal-btn-cancel{
+      background:rgba(155,175,139,0.1);
+      color:var(--mint-dark);
+    }
     /* Modal Categories Management */
-    .categories-modal-content {
-      max-height: 70vh;
-      overflow-y: auto;
+    .categories-modal-content{
+      max-height:70vh;
+      overflow-y:auto;
     }
-
-    .category-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px;
-      background: rgba(155,175,139,0.08);
-      border-radius: 12px;
-      margin-bottom: 8px;
-      gap: 8px;
-      cursor: pointer;
-      transition: all .12s ease;
+    .category-item{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:12px;
+      background:rgba(155,175,139,0.08);
+      border-radius:12px;
+      margin-bottom:8px;
+      gap:8px;
+      cursor:pointer;
+      transition:all .12s ease;
     }
-
-    .category-item:hover {
-      background: rgba(155,175,139,0.15);
-      transform: translateX(4px);
+    .category-item:hover{
+      background:rgba(155,175,139,0.15);
+      transform:translateX(4px);
     }
-
-    .category-preview {
-      width: 28px;
-      height: 28px;
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 600;
-      color: #fff;
-      font-size: 0.85rem;
-      flex-shrink: 0;
+    .category-preview{
+      width:28px;
+      height:28px;
+      border-radius:6px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:600;
+      color:#fff;
+      font-size:0.85rem;
+      flex-shrink:0;
     }
-
-    .category-inputs {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+    .category-inputs{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
     }
-
-    .category-name {
-      padding: 8px;
-      border: 1px solid rgba(155,175,139,0.45);
-      border-radius: 8px;
-      font-size: 0.9rem;
+    .category-name{
+      padding:8px;
+      border:1px solid rgba(155,175,139,0.45);
+      border-radius:8px;
+      font-size:0.9rem;
     }
-
-    .color-picker-wrap {
-      position: relative;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    .color-picker-wrap{
+      position:relative;
+      display:flex;
+      align-items:center;
+      gap:8px;
     }
-
-    .color-preview {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      border: 2px solid rgba(0,0,0,0.1);
-      cursor: pointer;
+    .color-preview{
+      width:32px;
+      height:32px;
+      border-radius:8px;
+      border:2px solid rgba(0,0,0,0.1);
+      cursor:pointer;
     }
-
-    .color-input {
-      flex: 1;
-      padding: 8px;
-      border: 1px solid rgba(155,175,139,0.45);
-      border-radius: 8px;
-      font-size: 0.9rem;
+    .color-input{
+      flex:1;
+      padding:8px;
+      border:1px solid rgba(155,175,139,0.45);
+      border-radius:8px;
+      font-size:0.9rem;
     }
-
-    .category-controls {
-      display: flex;
-      gap: 4px;
-      flex-shrink: 0;
+    .category-controls{
+      display:flex;
+      gap:4px;
+      flex-shrink:0;
     }
-
-    .category-drag {
-      cursor: move;
-      font-size: 1.2rem;
-      opacity: 0.6;
-      padding: 4px;
+    .category-drag{
+      cursor:move;
+      font-size:1.2rem;
+      opacity:0.6;
+      padding:4px;
     }
-
-    .category-drag:hover {
-      opacity: 1;
+    .category-drag:hover{opacity:1;}
+    .category-remove{
+      background:none;
+      border:none;
+      color:var(--text-soft);
+      font-size:1.1rem;
+      cursor:pointer;
+      padding:4px;
+      border-radius:4px;
     }
-
-    .category-remove {
-      background: none;
-      border: none;
-      color: var(--text-soft);
-      font-size: 1.1rem;
-      cursor: pointer;
-      padding: 4px;
-      border-radius: 4px;
+    .category-remove:hover{
+      background:rgba(217,83,79,0.1);
+      color:#d9534f;
     }
-
-    .category-remove:hover {
-      background: rgba(217,83,79,0.1);
-      color: #d9534f;
-    }
-
     /* Modal Legenda */
-    .legend-overlay {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.5);
-      z-index: 999;
-      justify-content: center;
-      align-items: flex-end;
+    .legend-overlay{
+      display:none;
+      position:fixed;
+      top:0;left:0;right:0;bottom:0;
+      background:rgba(0,0,0,0.5);
+      z-index:999;
+      justify-content:center;
+      align-items:flex-end;
     }
-
-    .legend-overlay.active {
-      display: flex;
+    .legend-overlay.active{display:flex;}
+    .legend-overlay.active::before{
+      content:"";
+      position:fixed;
+      top:0;left:0;right:0;bottom:0;
+      z-index:998;
     }
-
-    .legend-overlay.active::before {
-      content: '';
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      z-index: 998;
+    .legend-content{
+      background:#fff;
+      border-radius:20px 20px 0 0;
+      padding:20px;
+      width:100%;
+      max-width:520px;
+      max-height:70vh;
+      display:flex;
+      flex-direction:column;
+      box-shadow:0 -10px 30px rgba(0,0,0,0.2);
+      z-index:999;
+      position:relative;
     }
-
-    .legend-content {
-      background: #fff;
-      border-radius: 20px 20px 0 0;
-      padding: 20px;
-      width: 100%;
-      max-width: 520px;
-      max-height: 70vh;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 -10px 30px rgba(0,0,0,0.2);
-      z-index: 999;
-      position: relative;
-      touch-action: pan-y;
+    .legend-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:12px;
+      font-size:1.1rem;
+      font-weight:600;
+      color:var(--mint-dark);
+      flex-shrink:0;
     }
-
-    .legend-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: var(--mint-dark);
-      flex-shrink: 0;
+    .legend-close{
+      background:none;
+      border:none;
+      font-size:1.3rem;
+      cursor:pointer;
+      color:var(--text-soft);
+      z-index:1000;
+      position:relative;
     }
-
-    .legend-close {
-      background: none;
-      border: none;
-      font-size: 1.3rem;
-      cursor: pointer;
-      color: var(--text-soft);
-      z-index: 1000;
-      position: relative;
+    .legend-tabs{
+      display:flex;
+      gap:10px;
+      margin-bottom:12px;
+      padding-bottom:12px;
+      border-bottom:1px solid rgba(155,175,139,0.2);
     }
-
-    .legend-tabs {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 12px;
-      padding-bottom: 12px;
-      border-bottom: 1px solid rgba(155,175,139,0.2);
+    .legend-tab{
+      background:rgba(155,175,139,0.1);
+      border:none;
+      padding:8px 14px;
+      border-radius:8px;
+      font-weight:600;
+      font-size:0.9rem;
+      color:var(--text-soft);
+      cursor:pointer;
+      transition:all .12s ease;
     }
-
-    .legend-tab {
-      background: rgba(155,175,139,0.1);
-      border: none;
-      padding: 8px 14px;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 0.9rem;
-      color: var(--text-soft);
-      cursor: pointer;
-      transition: all .12s ease;
+    .legend-tab.active{
+      background:var(--mint-main);
+      color:#fff;
     }
-
-    .legend-tab.active {
-      background: var(--mint-main);
-      color: #fff;
+    .alphabet{
+      display:flex;
+      flex-wrap:wrap;
+      gap:4px;
+      margin-bottom:12px;
+      padding-bottom:12px;
+      border-bottom:1px solid rgba(155,175,139,0.2);
     }
-
-    .alphabet {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 4px;
-      margin-bottom: 12px;
-      padding-bottom: 12px;
-      border-bottom: 1px solid rgba(155,175,139,0.2);
+    .alpha-btn{
+      background:rgba(155,175,139,0.08);
+      border:1px solid rgba(155,175,139,0.3);
+      border-radius:6px;
+      padding:4px 8px;
+      font-size:0.75rem;
+      font-weight:600;
+      color:var(--mint-dark);
+      cursor:pointer;
+      transition:all .12s ease;
     }
-
-    .alpha-btn {
-      background: rgba(155,175,139,0.08);
-      border: 1px solid rgba(155,175,139,0.3);
-      border-radius: 6px;
-      padding: 4px 8px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: var(--mint-dark);
-      cursor: pointer;
-      transition: all .12s ease;
+    .alpha-btn:hover{
+      background:var(--mint-main);
+      color:#fff;
+      border-color:var(--mint-main);
     }
-
-    .alpha-btn:hover {
-      background: var(--mint-main);
-      color: #fff;
-      border-color: var(--mint-main);
+    .alpha-btn.disabled{
+      opacity:0.4;
+      cursor:not-allowed;
     }
-
-    .alpha-btn.disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
+    .legend-scroll{
+      overflow-y:auto;
+      flex:1;
+      -webkit-overflow-scrolling:touch;
+      touch-action:manipulation;
     }
-
-    .legend-scroll {
-      overflow-y: auto;
-      flex: 1;
-      -webkit-overflow-scrolling: touch;
-      touch-action: pan-y pinch-zoom;
-      overscroll-behavior: contain;
+    .legend-list{
+      list-style:none;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      margin:0;
+      padding:0;
+      pointer-events:auto;
     }
-
-    .legend-list {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin: 0;
-      padding: 0;
-      pointer-events: auto;
+    .legend-item{
+      padding:12px;
+      background:rgba(155,175,139,0.08);
+      border-left:4px solid var(--mint-main);
+      border-radius:8px;
+      cursor:pointer;
+      transition:all .12s ease;
+      pointer-events:auto;
     }
-
-    .legend-item {
-      padding: 12px;
-      background: rgba(155,175,139,0.08);
-      border-left: 4px solid var(--mint-main);
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all .12s ease;
-      pointer-events: auto;
+    .legend-item:hover{
+      background:rgba(155,175,139,0.15);
+      transform:translateX(4px);
     }
-
-    .legend-item:hover {
-      background: rgba(155,175,139,0.15);
-      transform: translateX(4px);
+    .legend-item-name{
+      font-weight:500;
+      color:var(--mint-dark);
+      font-size:0.95rem;
     }
-
-    .legend-item-name {
-      font-weight: 500;
-      color: var(--mint-dark);
-      font-size: 0.95rem;
+    .legend-section-header{
+      font-weight:600;
+      font-size:0.85rem;
+      color:var(--text-soft);
+      text-transform:uppercase;
+      letter-spacing:0.05em;
+      margin-top:12px;
+      margin-bottom:4px;
+      padding:8px 0;
+      border-top:1px solid rgba(155,175,139,0.15);
     }
-
-    .legend-section-header {
-      font-weight: 600;
-      font-size: 0.85rem;
-      color: var(--text-soft);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-top: 12px;
-      margin-bottom: 4px;
-      padding: 8px 0;
-      border-top: 1px solid rgba(155,175,139,0.15);
-    }
-
-    @media (max-width: 480px) {
-      .app {
-        border-radius: 20px;
-      }
-      .header h1 {
-        font-size: 1.5rem;
-      }
-      .list {
-        padding-bottom: 78px;
-      }
-      .categories-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      .backup-bar {
-        max-height: 250px;
-      }
+    @media (max-width:480px){
+      .app{border-radius:20px;}
+      .header h1{font-size:1.5rem;}
+      .list{padding-bottom:78px;}
+      .categories-grid{grid-template-columns:repeat(2,1fr);}
+      .backup-bar{max-height:250px;}
     }
   </style>
 </head>
@@ -897,27 +753,27 @@
         <span class="sub" id="headerSub">Il taccuino dei tuoi drink</span>
       </div>
       <div class="header-actions">
-        <div class="tag" id="statusTag">offline questo dispositivo</div>
-        <button class="categories-btn" id="categoriesBtn">Categorie</button>
+        <div class="tag" id="statusTag">offline â€¢ questo dispositivo</div>
+        <button class="categories-btn" id="categoriesBtn">ðŸ“‚ Categorie</button>
       </div>
     </header>
 
     <section class="bar">
       <div class="search-wrap">
-        <span class="search-icon">🔍</span>
-        <input id="search" type="text" placeholder="Cerca un drink...">
-        <div class="filter-indicator" id="filterIndicator" style="display: none"></div>
+        <span class="search-icon">ðŸ”</span>
+        <input id="search" type="text" placeholder="Cerca un drink..." />
+        <div class="filter-indicator" id="filterIndicator" style="display:none;"></div>
       </div>
       <div class="counter" id="counter">0</div>
     </section>
 
-    <main class="list" id="listmain"></main>
+    <main class="list" id="list"></main>
 
     <footer class="fab-wrap">
       <button class="fab-main" id="newBtn">
-        <span>Nuovo drink</span>
+        <span>ï¼‹ Nuovo drink</span>
       </button>
-      <button class="fab-secondary" id="menuBtn">☰</button>
+      <button class="fab-secondary" id="menuBtn">â˜°</button>
     </footer>
   </div>
 
@@ -927,8 +783,8 @@
       <div class="modal-title">Seleziona tipo</div>
       <select id="typeSelect" class="modal-select">
         <option value="">-- Scegli --</option>
-        <option value="drink">Drink</option>
-        <option value="prebatch">Pre Batch</option>
+        <option value="drink">ðŸ¥ƒ Drink</option>
+        <option value="prebatch">ðŸ§ƒ Pre Batch</option>
       </select>
       <div class="modal-actions">
         <button class="modal-btn modal-btn-cancel" id="cancelTypeBtn">Annulla</button>
@@ -954,7 +810,7 @@
     <div class="modal-content categories-modal-content">
       <div class="modal-header">
         <div class="modal-title">Gestione Categorie</div>
-        <button class="add-category-in-modal" id="addCategoryBtn">+</button>
+        <button class="add-category-in-modal" id="addCategoryBtn">âž•</button>
       </div>
       <div id="categoriesList"></div>
       <div class="modal-actions">
@@ -967,7 +823,10 @@
   <div id="ingredientsModal" class="modal-overlay" onclick="if(event.target === this) closeModal('ingredientsModal')">
     <div class="modal-content">
       <div class="modal-title">Ingredienti</div>
-      <textarea id="ingredientsTextarea" class="modal-textarea" placeholder="Scrivi ogni ingrediente su una nuova riga&#10;3cl gin&#10;3cl vermouth dry&#10;1 dash angostura"></textarea>
+      <textarea id="ingredientsTextarea" class="modal-textarea" placeholder="Scrivi ogni ingrediente su una nuova riga:
+3cl gin
+3cl vermouth dry
+1 dash angostura"></textarea>
       <div class="modal-actions">
         <button class="modal-btn modal-btn-cancel" id="cancelIngredientsBtn">Annulla</button>
         <button class="modal-btn modal-btn-confirm" id="confirmIngredientsBtn">Salva</button>
@@ -978,8 +837,8 @@
   <!-- Modal per preparazione -->
   <div id="preparationModal" class="modal-overlay" onclick="if(event.target === this) closeModal('preparationModal')">
     <div class="modal-content">
-      <div class="modal-title">Preparazione Note</div>
-      <textarea id="preparationTextarea" class="modal-textarea" placeholder="Scrivi la preparazione su più righe..."></textarea>
+      <div class="modal-title">Preparazione / Note</div>
+      <textarea id="preparationTextarea" class="modal-textarea" placeholder="Scrivi la preparazione su piÃ¹ righe..."></textarea>
       <div class="modal-actions">
         <button class="modal-btn modal-btn-cancel" id="cancelPreparationBtn">Annulla</button>
         <button class="modal-btn modal-btn-confirm" id="confirmPreparationBtn">Salva</button>
@@ -992,11 +851,11 @@
     <div class="legend-content">
       <div class="legend-header">
         Legenda
-        <button class="legend-close" id="closeLegendBtn" onclick="closeLegenda(); return false">×</button>
+        <button class="legend-close" id="closeLegendBtn" onclick="closeLegenda(); return false;">âœ•</button>
       </div>
       <div class="legend-tabs">
-        <button class="legend-tab active" id="drinkTab" onclick="switchLegendaTab('drink')">Drink</button>
-        <button class="legend-tab" id="prebatchTab" onclick="switchLegendaTab('prebatch')">Pre Batch</button>
+        <button class="legend-tab active" id="drinkTab" onclick="switchLegendaTab('drink')">ðŸ¥ƒ Drink</button>
+        <button class="legend-tab" id="prebatchTab" onclick="switchLegendaTab('prebatch')">ðŸ§ƒ Pre Batch</button>
       </div>
       <div class="alphabet" id="alphabet"></div>
       <div class="legend-scroll">
@@ -1005,7 +864,7 @@
     </div>
   </div>
 
-  <input type="file" id="importInput" accept=".json" style="display: none">
+  <input type="file" id="importInput" accept=".json" style="display:none" />
 
   <script>
     const STORAGE_KEY = 'mintPocketDrinks_v1';
@@ -1018,40 +877,44 @@
     let pendingDrinkData = null;
     let editingDrinkId = null;
 
-    function loadFromStorage() {
-      try {
+    function loadFromStorage(){
+      try{
         const raw = localStorage.getItem(STORAGE_KEY);
         drinks = raw ? JSON.parse(raw) : [];
-      } catch (e) { drinks = []; }
-      try {
+      }catch(e){
+        drinks = [];
+      }
+      try{
         const raw = localStorage.getItem(CATEGORIES_KEY);
         categories = raw ? JSON.parse(raw) : [];
-      } catch (e) { categories = []; }
+      }catch(e){
+        categories = [];
+      }
     }
 
-    function saveToStorage() {
+    function saveToStorage(){
       localStorage.setItem(STORAGE_KEY, JSON.stringify(drinks));
       localStorage.setItem(CATEGORIES_KEY, JSON.stringify(categories));
       render();
     }
 
-    function saveCategories() {
+    function saveCategories(){
       localStorage.setItem(CATEGORIES_KEY, JSON.stringify(categories));
     }
 
-    function closeModal(modalId) {
-      document.getElementById(modalId).classList.remove('active');
+    function closeModal(modalId){
+      document.getElementById(modalId + 'Modal').classList.remove('active');
     }
 
-    function setFilter(type, id) {
-      currentFilter = { type, id };
+    function setFilter(type, id){
+      currentFilter = {type, id};
       hasSearched = true;
       document.getElementById('search').value = '';
       render();
       updateUIForFilter();
     }
 
-    function clearFilter() {
+    function clearFilter(){
       currentFilter = null;
       hasSearched = false;
       document.getElementById('search').value = '';
@@ -1060,22 +923,22 @@
       updateUIForFilter();
     }
 
-    function refreshPage() {
+    function refreshPage(){
       clearFilter();
       loadFromStorage();
       render();
     }
 
-    function updateUIForFilter() {
+    function updateUIForFilter(){
       const headerSub = document.getElementById('headerSub');
       const statusTag = document.getElementById('statusTag');
       const filterIndicator = document.getElementById('filterIndicator');
-
-      if (currentFilter) {
-        if (currentFilter.type === 'category') {
+      
+      if(currentFilter){
+        if(currentFilter.type === 'category'){
           const cat = categories.find(c => c.id === currentFilter.id);
-          if (cat) {
-            headerSub.textContent = cat.nome;
+          if(cat){
+            headerSub.textContent = `"${cat.nome}"`;
             filterIndicator.textContent = cat.nome;
             filterIndicator.style.display = 'block';
             statusTag.style.display = 'none';
@@ -1083,63 +946,65 @@
           }
         }
       }
+      
       headerSub.textContent = 'Il taccuino dei tuoi drink';
       statusTag.style.display = 'block';
       filterIndicator.style.display = 'none';
     }
 
-    function openTypeModal(callback) {
+    function openTypeModal(callback){
       document.getElementById('typeModal').classList.add('active');
       const confirmBtn = document.getElementById('confirmTypeBtn');
       const cancelBtn = document.getElementById('cancelTypeBtn');
-
+      
       const handleConfirm = () => {
         const type = document.getElementById('typeSelect').value;
-        if (!type) {
+        if(!type){
           alert('Seleziona un tipo');
           return;
         }
-        closeModal('typeModal');
+        closeModal('type');
         confirmBtn.removeEventListener('click', handleConfirm);
         cancelBtn.removeEventListener('click', handleCancel);
         callback(type);
       };
-
+      
       const handleCancel = () => {
-        closeModal('typeModal');
+        closeModal('type');
         confirmBtn.removeEventListener('click', handleConfirm);
         cancelBtn.removeEventListener('click', handleCancel);
       };
-
+      
       confirmBtn.addEventListener('click', handleConfirm);
       cancelBtn.addEventListener('click', handleCancel);
     }
 
-    function openCategoriesModal(selectedCategories = [], callback) {
+    function openCategoriesModal(selectedCategories = [], callback){
       buildCategoriesGrid(selectedCategories);
       document.getElementById('categoriesModal').classList.add('active');
+      
       const confirmBtn = document.getElementById('confirmCategoriesBtn');
       const cancelBtn = document.getElementById('cancelCategoriesBtn');
-
+      
       const handleConfirm = () => {
         const selected = Array.from(document.querySelectorAll('#categoriesGrid input:checked')).map(cb => parseInt(cb.value));
-        closeModal('categoriesModal');
+        closeModal('categories');
         confirmBtn.removeEventListener('click', handleConfirm);
         cancelBtn.removeEventListener('click', handleCancel);
         callback(selected);
       };
-
+      
       const handleCancel = () => {
-        closeModal('categoriesModal');
+        closeModal('categories');
         confirmBtn.removeEventListener('click', handleConfirm);
         cancelBtn.removeEventListener('click', handleCancel);
       };
-
+      
       confirmBtn.addEventListener('click', handleConfirm);
       cancelBtn.addEventListener('click', handleCancel);
     }
 
-    function buildCategoriesGrid(selectedCategories) {
+    function buildCategoriesGrid(selectedCategories = []){
       const grid = document.getElementById('categoriesGrid');
       grid.innerHTML = categories.map(cat => {
         const checked = selectedCategories.includes(cat.id);
@@ -1152,56 +1017,50 @@
       }).join('');
     }
 
-    function openModal(modalId, defaultValue = '', callback) {
+    function openModal(modalId, defaultValue = '', callback){
       const textarea = document.getElementById(modalId + 'Textarea');
       textarea.value = defaultValue;
       document.getElementById(modalId + 'Modal').classList.add('active');
-
+      
       const confirmBtn = document.getElementById('confirm' + modalId.charAt(0).toUpperCase() + modalId.slice(1) + 'Btn');
       const cancelBtn = document.getElementById('cancel' + modalId.charAt(0).toUpperCase() + modalId.slice(1) + 'Btn');
-
+      
       const handleConfirm = () => {
         const value = textarea.value;
-        closeModal(modalId + 'Modal');
+        closeModal(modalId);
         confirmBtn.removeEventListener('click', handleConfirm);
         cancelBtn.removeEventListener('click', handleCancel);
         callback(value);
       };
-
+      
       const handleCancel = () => {
-        closeModal(modalId + 'Modal');
+        closeModal(modalId);
         confirmBtn.removeEventListener('click', handleConfirm);
         cancelBtn.removeEventListener('click', handleCancel);
       };
-
+      
       confirmBtn.addEventListener('click', handleConfirm);
       cancelBtn.addEventListener('click', handleCancel);
     }
 
-    function openIngredientsModal(defaultValue = '', callback) {
+    function openIngredientsModal(defaultValue = '', callback){
       openModal('ingredients', defaultValue, callback);
     }
 
-    function openPreparationModal(defaultValue = '', callback) {
+    function openPreparationModal(defaultValue = '', callback){
       openModal('preparation', defaultValue, callback);
     }
 
-    function openManageCategoriesModal() {
+    function openManageCategoriesModal(){
       buildCategoriesList();
       document.getElementById('manageCategoriesModal').classList.add('active');
     }
 
-    function buildCategoriesList() {
+    function buildCategoriesList(){
       const list = document.getElementById('categoriesList');
       list.innerHTML = categories.map((cat, index) => `
-        <div class="category-item" 
-             onclick="setFilter('category', ${cat.id})" 
-             draggable="true" 
-             ondragstart="dragStart(event, ${index})" 
-             ondragover="dragOver(event)" 
-             ondrop="drop(event, ${index})" 
-             ondragend="dragEnd(event)">
-          <div class="category-preview" style="background: ${cat.color}">${escapeHtml(cat.nome.charAt(0).toUpperCase())}</div>
+        <div class="category-item" onclick="setFilter('category', ${cat.id})" draggable="true" ondragstart="dragStart(event, ${index})" ondragover="dragOver(event)" ondrop="drop(event, ${index})" ondragend="dragEnd(event)">
+          <div class="category-preview" style="background: ${cat.color}">${escapeHtml(cat.nome).charAt(0).toUpperCase()}</div>
           <div class="category-inputs">
             <input type="text" class="category-name" value="${escapeHtml(cat.nome)}" onchange="updateCategoryName(${cat.id}, this.value)">
             <div class="color-picker-wrap">
@@ -1210,46 +1069,45 @@
             </div>
           </div>
           <div class="category-controls">
-            <span class="category-drag" draggable="true" title="Trascina per riordinare">⋮⋮</span>
-            <button class="category-remove" onclick="event.stopPropagation(); removeCategory(${cat.id})" title="Elimina">×</button>
+            <span class="category-drag" draggable="true" title="Trascina per riordinare">â‹®â‹®</span>
+            <button class="category-remove" onclick="event.stopPropagation(); removeCategory(${cat.id})" title="Elimina">âœ•</button>
           </div>
         </div>
       `).join('');
     }
 
-    function addNewCategory() {
+    function addNewCategory(){
       const newId = Date.now();
-      categories.push({ id: newId, nome: 'Nuova Categoria', color: '#FF6B6B', position: categories.length });
+      categories.push({
+        id: newId,
+        nome: 'Nuova Categoria',
+        color: '#FF6B6B',
+        position: categories.length
+      });
       saveCategories();
       buildCategoriesList();
     }
 
-    function updateCategoryName(id, name) {
+    function updateCategoryName(id, name){
       const cat = categories.find(c => c.id === id);
-      if (cat) {
-        cat.nome = name;
-        saveCategories();
-        updateUIForFilter();
-      }
+      if(cat) cat.nome = name;
+      saveCategories();
+      updateUIForFilter();
     }
 
-    function updateCategoryColor(id, color) {
+    function updateCategoryColor(id, color){
       const cat = categories.find(c => c.id === id);
-      if (cat) {
-        cat.color = color;
-        saveCategories();
-        render();
-        updateUIForFilter();
-      }
+      if(cat) cat.color = color;
+      saveCategories();
+      render();
+      updateUIForFilter();
     }
 
-    function removeCategory(id) {
-      if (confirm('Eliminare questa categoria? I drink che la usano perderanno questo riferimento.')) {
+    function removeCategory(id){
+      if(confirm('Eliminare questa categoria? I drink che la usano perderanno questo riferimento.')){
         categories = categories.filter(c => c.id !== id);
         drinks.forEach(drink => {
-          if (drink.categorie) {
-            drink.categorie = drink.categorie.filter(c => c !== id);
-          }
+          drink.categorie = drink.categorie ? drink.categorie.filter(c => c !== id) : [];
         });
         saveCategories();
         saveToStorage();
@@ -1260,88 +1118,91 @@
     }
 
     let draggedIndex = null;
-
-    function dragStart(e, index) {
+    function dragStart(e, index){
       draggedIndex = index;
       e.target.style.opacity = '0.5';
     }
-
-    function dragOver(e) {
+    function dragOver(e){
       e.preventDefault();
     }
-
-    function drop(e, index) {
+    function drop(e, index){
       e.preventDefault();
-      if (draggedIndex !== null && draggedIndex !== index) {
+      if(draggedIndex !== null && draggedIndex !== index){
         const draggedCat = categories[draggedIndex];
         categories.splice(draggedIndex, 1);
         categories.splice(index, 0, draggedCat);
-        categories.forEach((cat, i) => { cat.position = i; });
+        categories.forEach((cat, i) => cat.position = i);
         saveCategories();
         buildCategoriesList();
       }
     }
-
-    function dragEnd(e) {
+    function dragEnd(e){
       e.target.style.opacity = '1';
       draggedIndex = null;
     }
 
-    function switchLegendaTab(tab) {
+    function switchLegendaTab(tab){
       currentLegendaTab = tab;
       document.getElementById('drinkTab').classList.toggle('active', tab === 'drink');
       document.getElementById('prebatchTab').classList.toggle('active', tab === 'prebatch');
       buildLegenda();
     }
 
-    function buildAlphabet() {
+    function buildAlphabet(){
       const filtered = drinks.filter(d => d.tipo === currentLegendaTab);
       const drinkLetters = new Set();
       filtered.forEach(d => {
         const letter = d.nome.charAt(0).toUpperCase();
-        if (/[A-Z]/.test(letter)) drinkLetters.add(letter);
+        if(/[A-Z]/.test(letter)){
+          drinkLetters.add(letter);
+        }
       });
 
       const alphabetEl = document.getElementById('alphabet');
       alphabetEl.innerHTML = '';
-      for (let i = 65; i <= 90; i++) {
+      
+      for(let i = 65; i <= 90; i++){
         const letter = String.fromCharCode(i);
         const btn = document.createElement('button');
         btn.className = 'alpha-btn';
-        if (!drinkLetters.has(letter)) btn.classList.add('disabled');
+        if(!drinkLetters.has(letter)){
+          btn.classList.add('disabled');
+        }
         btn.textContent = letter;
         btn.onclick = (e) => {
           e.stopPropagation();
-          if (!drinkLetters.has(letter)) return;
+          if(!drinkLetters.has(letter)) return;
           scrollToLetter(letter);
         };
         alphabetEl.appendChild(btn);
       }
     }
 
-    function scrollToLetter(letter) {
+    function scrollToLetter(letter){
       const listItems = document.querySelectorAll('.legend-item');
       let targetItem = null;
-      for (let item of listItems) {
+      
+      for(let item of listItems){
         const firstLetter = item.querySelector('.legend-item-name').textContent.charAt(0).toUpperCase();
-        if (firstLetter === letter) {
+        if(firstLetter === letter){
           targetItem = item;
           break;
         }
       }
-      if (targetItem) {
+      
+      if(targetItem){
         const scroll = document.querySelector('.legend-scroll');
         const offset = targetItem.offsetTop - scroll.offsetTop - 10;
         scroll.scrollTop = offset;
       }
     }
 
-    function buildLegenda() {
+    function buildLegenda(){
       const filtered = drinks.filter(d => d.tipo === currentLegendaTab);
-      const sorted = [...filtered].sort((a, b) => a.nome.localeCompare(b.nome));
+      const sorted = [...filtered].sort((a,b) => a.nome.localeCompare(b.nome));
       const legendList = document.getElementById('legendList');
-
-      if (sorted.length === 0) {
+      
+      if(sorted.length === 0){
         legendList.innerHTML = '<li style="text-align:center;padding:20px;color:var(--text-soft)">Nessun elemento salvato</li>';
         buildAlphabet();
         return;
@@ -1351,21 +1212,21 @@
       legendList.innerHTML = sorted.map(d => {
         const letter = d.nome.charAt(0).toUpperCase();
         let header = '';
-        if (letter !== currentLetter && /[A-Z]/.test(letter)) {
+        if(letter !== currentLetter && /[A-Z]/.test(letter)){
           currentLetter = letter;
           header = `<div class="legend-section-header">${letter}</div>`;
         }
-        return `
-          ${header}
-          <li class="legend-item" onclick="searchDrink('${escapeHtml(d.nome)}'); return false">
+        return header + `
+          <li class="legend-item" onclick="searchDrink('${escapeHtml(d.nome)}'); return false;">
             <div class="legend-item-name">${escapeHtml(d.nome)}</div>
           </li>
         `;
       }).join('');
+      
       buildAlphabet();
     }
 
-    function openLegenda() {
+    function openLegenda(){
       currentLegendaTab = 'drink';
       document.getElementById('drinkTab').classList.add('active');
       document.getElementById('prebatchTab').classList.remove('active');
@@ -1373,23 +1234,23 @@
       document.getElementById('legendModal').classList.add('active');
     }
 
-    function closeLegenda() {
+    function closeLegenda(){
       document.getElementById('legendModal').classList.remove('active');
       const existing = document.querySelector('.backup-bar');
-      if (existing) existing.remove();
+      if(existing){existing.remove();}
     }
 
-    function searchDrink(nome) {
+    function searchDrink(nome){
       document.getElementById('search').value = nome;
       hasSearched = true;
       closeLegenda();
       render();
     }
 
-    function createDrink() {
+    function createDrink(){
       openTypeModal((tipo) => {
-        const nome = prompt('Nome del drink');
-        if (!nome?.trim()) return;
+        const nome = prompt('Nome del drink:');
+        if(!nome?.trim()) return;
         openCategoriesModal([], (categorie) => {
           openIngredientsModal('', (ingr) => {
             openPreparationModal('', (istr) => {
@@ -1397,7 +1258,7 @@
                 id: Date.now(),
                 nome: nome.trim(),
                 tipo,
-                categorie,
+                categorie: categorie || [],
                 ingredienti: ingr,
                 istruzioni: istr,
                 data: new Date().toLocaleDateString('it-IT')
@@ -1409,41 +1270,44 @@
       });
     }
 
-    function editDrink(id) {
+    function editDrink(id){
       editingDrinkId = id;
       const d = drinks.find(x => x.id === id);
-      if (!d) return;
-      const nome = prompt('Nome del drink', d.nome);
-      if (!nome?.trim()) return;
+      if(!d) return;
+      const nome = prompt('Nome del drink:', d.nome);
+      if(!nome?.trim()) return;
       openCategoriesModal(d.categorie || [], (categorie) => {
         openIngredientsModal(d.ingredienti || '', (ingr) => {
           openPreparationModal(d.istruzioni || '', (istr) => {
             const drink = drinks.find(x => x.id === id);
-            if (drink) {
+            if(drink){
               drink.nome = nome.trim();
-              drink.categorie = categorie;
+              drink.categorie = categorie || [];
               drink.ingredienti = ingr;
               drink.istruzioni = istr;
               drink.data = new Date().toLocaleDateString('it-IT');
-              saveToStorage();
             }
+            saveToStorage();
             editingDrinkId = null;
           });
         });
       });
     }
 
-    function deleteDrink(id) {
+    function deleteDrink(id){
       const d = drinks.find(x => x.id === id);
-      if (!d) return;
-      if (!confirm(`Eliminare ${d.nome}?`)) return;
+      if(!d) return;
+      if(!confirm(`Eliminare "${d.nome}"?`)) return;
       drinks = drinks.filter(x => x.id !== id);
       saveToStorage();
     }
 
-    function exportDrinks() {
-      const exportData = { drinks, categories };
-      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    function exportDrinks(){
+      const exportData = {
+        drinks,
+        categories
+      };
+      const blob = new Blob([JSON.stringify(exportData,null,2)],{type:'application/json'});
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       a.download = `mint-pocket-${new Date().toISOString().slice(0,10)}.json`;
@@ -1452,30 +1316,29 @@
       a.remove();
     }
 
-    function importDrinks(file) {
+    function importDrinks(file){
       const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
+      reader.onload = e => {
+        try{
           const imported = JSON.parse(e.target.result);
           const drinkCount = imported.drinks?.length || 0;
           const catCount = imported.categories?.length || 0;
-          if (!confirm(`Importare ${drinkCount} drink e ${catCount} categorie?`)) return;
-
+          
+          if(!confirm(`Importare ${drinkCount} drink e ${catCount} categorie?`)) return;
+          
           // Importa drink con gestione sicura delle categorie mancanti
-          drinks = imported.drinks?.map(d => ({
+          drinks = (imported.drinks || []).map(d => ({
             id: d.id || Date.now() + Math.random(),
             nome: d.nome?.trim() || 'Senza nome',
             tipo: d.tipo || 'drink',
-            categorie: Array.isArray(d.categorie) ? d.categorie.filter(cId => 
-              categories.find(c => c.id === cId) || imported.categories?.find(c => c.id === cId)
-            ) : [],
-            ingredienti: d.ingredienti,
-            istruzioni: d.istruzioni,
+            categorie: Array.isArray(d.categorie) ? d.categorie.filter(cId => categories.find(c => c.id === cId) || imported.categories?.find(c => c.id === cId)) : [],
+            ingredienti: d.ingredienti || '',
+            istruzioni: d.istruzioni || '',
             data: d.data || new Date().toLocaleDateString('it-IT')
-          })) || [];
-
+          }));
+          
           // Importa categorie
-          if (imported.categories && Array.isArray(imported.categories)) {
+          if(imported.categories && Array.isArray(imported.categories)){
             categories = imported.categories.map((c, i) => ({
               id: c.id || Date.now() + i,
               nome: c.nome?.trim() || 'Categoria',
@@ -1483,35 +1346,35 @@
               position: i
             }));
           }
+          
           saveToStorage();
-        } catch {
+        }catch{
           alert('File non valido.');
         }
       };
       reader.readAsText(file);
     }
 
-    function parseIngredients(str) {
-      if (!str || !str.trim()) return [];
-      return str.split(/\n/).map(i => i.trim()).filter(i => i.length > 0);
+    function parseIngredienti(str){
+      if(!str || !str.trim()) return [];
+      return str.split('\n').map(i => i.trim()).filter(i => i.length > 0);
     }
 
-    function parsePreparation(str) {
-      if (!str || !str.trim()) return [];
-      return str.split(/\n/).map(i => i.trim()).filter(i => i.length > 0);
+    function parsePreparation(str){
+      if(!str || !str.trim()) return [];
+      return str.split('\n').map(i => i.trim()).filter(i => i.length > 0);
     }
 
-    function render() {
+    function render(){
       const listEl = document.getElementById('list');
       const q = document.getElementById('search').value.trim().toLowerCase();
-
-      if (!q && !hasSearched && !currentFilter) {
+      
+      if(!q && !hasSearched && !currentFilter){
         listEl.innerHTML = `
           <div class="empty">
-            <span class="emoji">🍸</span>
+            <span class="emoji">ðŸ¥‚</span>
             <p>Scrivi il nome di un drink per cercarlo o usa le categorie.</p>
-          </div>
-        `;
+          </div>`;
         document.getElementById('counter').textContent = '0';
         return;
       }
@@ -1519,139 +1382,135 @@
       let filtered = drinks;
 
       // Applica filtro categoria
-      if (currentFilter && currentFilter.type === 'category') {
+      if(currentFilter && currentFilter.type === 'category'){
         filtered = filtered.filter(d => d.categorie && d.categorie.includes(currentFilter.id));
       }
 
       // Applica ricerca testo
-      if (q) {
+      if(q){
         filtered = filtered.filter(d => d.nome.toLowerCase().includes(q));
       }
 
       document.getElementById('counter').textContent = filtered.length;
 
-      if (filtered.length === 0) {
+      if(filtered.length === 0){
         listEl.innerHTML = `
           <div class="empty">
-            <span class="emoji">🔍</span>
+            <span class="emoji">ðŸ¸</span>
             <p>${currentFilter ? 'Nessun drink in questa categoria.' : 'Nessun drink trovato.'}</p>
-          </div>
-        `;
+          </div>`;
         return;
       }
 
       listEl.innerHTML = filtered.map(d => {
-        const ingredienti = parseIngredients(d.ingredienti);
+        const ingredienti = parseIngredienti(d.ingredienti);
         const preparation = parsePreparation(d.istruzioni);
-        const typeIcon = d.tipo === 'prebatch' ? '🍶' : '';
+        const typeIcon = d.tipo === 'prebatch' ? 'ðŸ§ƒ' : 'ðŸ¥ƒ';
         const catTags = (d.categorie || []).map(catId => {
           const cat = categories.find(c => c.id === catId);
           return cat ? `<span class="category-tag" style="background: ${cat.color}">${escapeHtml(cat.nome)}</span>` : '';
         }).filter(tag => tag).join('');
-
+        
         return `
-          <article class="card">
-            <div class="card-top">
-              <div>
-                <div class="card-name">${typeIcon} ${escapeHtml(d.nome)}</div>
-                ${catTags ? `<div class="card-categories">${catTags}</div>` : ''}
-              </div>
-              <span class="card-date">${escapeHtml(d.data)}</span>
+        <article class="card">
+          <div class="card-top">
+            <div>
+              <div class="card-name">${typeIcon} ${escapeHtml(d.nome)}</div>
+              ${catTags ? `<div class="card-categories">${catTags}</div>` : ''}
             </div>
-            <div class="card-body">
-              ${ingredienti.length > 0 ? `
-                <div class="ingredient-section">
-                  <div class="label">Ingredienti</div>
-                  <ul class="ingredient-list">
-                    ${ingredienti.map(i => `<li>${escapeHtml(i)}</li>`).join('')}
-                  </ul>
-                </div>
-              ` : '<div class="value"></div>'}
-              ${preparation.length > 0 ? `
-                <div class="ingredient-section">
-                  <div class="label">Preparazione</div>
-                  <ul class="preparation-list">
-                    ${preparation.map(p => `<li>${escapeHtml(p)}</li>`).join('')}
-                  </ul>
-                </div>
-              ` : ''}
+            <span class="card-date">${escapeHtml(d.data)}</span>
+          </div>
+          <div class="card-body">
+            <div class="ingredient-section">
+              <div class="label">Ingredienti</div>
+              ${ingredienti.length > 0 
+                ? `<ul class="ingredient-list">${ingredienti.map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul>`
+                : `<div class="value">â€”</div>`
+              }
             </div>
-            <div class="actions">
-              <button class="btn btn-ghost" onclick="editDrink(${d.id})">Modifica</button>
-              <button class="btn btn-primary" onclick="deleteDrink(${d.id})">Elimina</button>
+            ${preparation.length > 0 ? `
+            <div class="ingredient-section">
+              <div class="label">Preparazione</div>
+              <ul class="preparation-list">${preparation.map(p => `<li>${escapeHtml(p)}</li>`).join('')}</ul>
             </div>
-          </article>
-        `;
+            ` : ''}
+          </div>
+          <div class="actions">
+            <button class="btn btn-ghost" onclick="editDrink(${d.id})">âœï¸ Modifica</button>
+            <button class="btn btn-primary" onclick="deleteDrink(${d.id})">ðŸ—‘ï¸ Elimina</button>
+          </div>
+        </article>
+      `;
       }).join('');
     }
 
-    function escapeHtml(str) {
-      if (!str) return '';
+    function escapeHtml(str){
+      if(!str) return '';
       return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
+        .replace(/&/g,'&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;')
+        .replace(/'/g,'&#39;');
     }
 
     // Event Listeners
     document.getElementById('newBtn').addEventListener('click', createDrink);
     document.getElementById('search').addEventListener('input', (e) => {
-      if (e.target.value.trim().length === 0) {
+      if(e.target.value.trim().length > 0){
         hasSearched = true;
         currentFilter = null; // Clear category filter when searching
       }
       render();
       updateUIForFilter();
     });
+
     document.getElementById('categoriesBtn').addEventListener('click', openManageCategoriesModal);
     document.getElementById('addCategoryBtn').addEventListener('click', addNewCategory);
 
     document.getElementById('menuBtn').addEventListener('click', (e) => {
       e.stopPropagation();
       const existing = document.querySelector('.backup-bar');
-      if (existing) {
-        existing.remove();
-        return;
-      }
+      if(existing){existing.remove();return;}
       const bar = document.createElement('div');
       bar.className = 'backup-bar';
       bar.innerHTML = `
-        <button class="backup-btn" id="refreshBtn" style="display: ${currentFilter || hasSearched ? 'flex' : 'none'}">
-          <span class="icon">↻</span><span>Torna all'inizio</span>
+        <button class="backup-btn" id="refreshBtn" style="display:${currentFilter || hasSearched ? 'flex' : 'none'};">
+          <span class="icon">ðŸ”„</span><span>Torna all'inizio</span>
         </button>
-        <button class="backup-btn" id="clearFilterBtn" style="display: ${currentFilter ? 'flex' : 'none'}">
-          <span class="icon">✕</span><span>Pulisci filtro</span>
+        <button class="backup-btn" id="clearFilterBtn" style="display:${currentFilter ? 'flex' : 'none'};">
+          <span class="icon">âŒ</span><span>Pulisci filtro</span>
         </button>
         <button class="backup-btn" id="legendBtn">
-          <span class="icon">📖</span><span>Legenda</span>
+          <span class="icon">ðŸ“‹</span><span>Legenda</span>
         </button>
         <button class="backup-btn" id="exportBtn">
-          <span class="icon">💾</span><span>Backup</span>
+          <span class="icon">ðŸ“¤</span><span>Backup</span>
         </button>
         <button class="backup-btn" id="importBtn">
-          <span class="icon">📥</span><span>Ripristina</span>
-        </button>
-      `;
+          <span class="icon">ðŸ“¥</span><span>Ripristina</span>
+        </button>`;
       document.querySelector('.fab-wrap').prepend(bar);
+      
       document.getElementById('refreshBtn').onclick = refreshPage;
       document.getElementById('clearFilterBtn').onclick = clearFilter;
-      document.getElementById('legendBtn').onclick = (e) => {
-        e.stopPropagation();
-        openLegenda();
-      };
+      document.getElementById('legendBtn').onclick = (e) => { e.stopPropagation(); openLegenda(); };
       document.getElementById('exportBtn').onclick = exportDrinks;
-      document.getElementById('importBtn').onclick = () => document.getElementById('importInput').click();
-      document.getElementById('saveCategoriesBtn').addEventListener('click', () => closeModal('manageCategoriesModal'));
-      document.getElementById('importInput').addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) importDrinks(file);
-        e.target.value = '';
-      });
+      document.getElementById('importBtn').onclick = () => {
+        document.getElementById('importInput').click();
+      };
     });
 
-    // Init
+    document.getElementById('saveCategoriesBtn').addEventListener('click', () => {
+      closeModal('manageCategories');
+    });
+    
+    document.getElementById('importInput').addEventListener('change', e => {
+      const file = e.target.files[0];
+      if(file) importDrinks(file);
+      e.target.value = '';
+    });
+
     loadFromStorage();
     render();
     updateUIForFilter();
