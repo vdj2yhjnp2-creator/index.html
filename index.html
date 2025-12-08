@@ -345,7 +345,7 @@
     function createDrink(){
       const nome = prompt('Nome del drink:');
       if(!nome) return;
-      const ingr = prompt('Ingredienti (uno per riga, es:\n3cl gin\n3cl vermouth\n1 dash angostura):') || '';
+      const ingr = prompt('Ingredienti (vai a capo per ogni ingrediente):\n\nEs:\n3cl gin\n3cl vermouth\n1 dash angostura') || '';
       const istr = prompt('Preparazione / note:') || '';
       drinks.unshift({
         id: Date.now(),
@@ -362,7 +362,7 @@
       if(!d) return;
       const nome = prompt('Nome del drink:', d.nome);
       if(!nome) return;
-      const ingr = prompt('Ingredienti (uno per riga):', d.ingredienti) ?? d.ingredienti;
+      const ingr = prompt('Ingredienti (vai a capo per ogni ingrediente):', d.ingredienti) ?? d.ingredienti;
       const istr = prompt('Preparazione / note:', d.istruzioni) ?? d.istruzioni;
       d.nome = nome;
       d.ingredienti = ingr;
@@ -430,11 +430,9 @@
         return;
       }
 
+      // RICERCA SOLO NEL NOME
       const filtered = drinks.filter(d =>
-        !q ||
-        d.nome.toLowerCase().includes(q) ||
-        d.ingredienti.toLowerCase().includes(q) ||
-        d.istruzioni.toLowerCase().includes(q)
+        !q || d.nome.toLowerCase().includes(q)
       );
       document.getElementById('counter').textContent = filtered.length;
 
