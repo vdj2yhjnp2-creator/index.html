@@ -6,14 +6,15 @@
   <title>Mint Pocket</title>
   <style>
     :root{
-      --mint-main:#9BAF8B;
-      --mint-dark:#5C6B4F;
-      --mint-light:#E3E9DC;
-      --accent-warm:#D9B18C;
-      --bg-main:#F7F4EF;
+      --mint-main:#9BAF8B;       /* verde salvia principale */
+      --mint-dark:#5C6B4F;       /* salvia scuro per testi/bottoni */
+      --mint-light:#E3E9DC;      /* sfondo soft */
+      --accent-warm:#D9B18C;     /* accento caldo tipo legno */
+      --bg-main:#F7F4EF;         /* panna di sfondo */
       --text-main:#333333;
       --text-soft:#6B6B6B;
       --radius-lg:18px;
+      --radius-md:12px;
       --shadow-soft:0 10px 25px rgba(0,0,0,0.08);
     }
     *{box-sizing:border-box;margin:0;padding:0}
@@ -32,7 +33,6 @@
       box-shadow:var(--shadow-soft);
       overflow:hidden;
       border:1px solid rgba(155,175,139,0.25);
-      position:relative;
     }
     .header{
       padding:22px 20px 16px;
@@ -42,9 +42,19 @@
       justify-content:space-between;
       align-items:center;
     }
-    .header-title{display:flex;flex-direction:column;gap:4px;}
-    .header h1{font-size:1.7rem;letter-spacing:0.03em;}
-    .header span.sub{font-size:0.8rem;opacity:0.9;}
+    .header-title{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+    .header h1{
+      font-size:1.7rem;
+      letter-spacing:0.03em;
+    }
+    .header span.sub{
+      font-size:0.8rem;
+      opacity:0.9;
+    }
     .tag{
       padding:6px 10px;
       border-radius:999px;
@@ -60,7 +70,10 @@
       gap:8px;
       align-items:center;
     }
-    .search-wrap{position:relative;flex:1;}
+    .search-wrap{
+      position:relative;
+      flex:1;
+    }
     .search-wrap input{
       width:100%;
       padding:11px 34px 11px 32px;
@@ -109,12 +122,13 @@
       border:1px solid rgba(155,175,139,0.22);
       position:relative;
       overflow:hidden;
-      scroll-margin-top:110px;
     }
     .card::before{
       content:"";
       position:absolute;
-      left:0;top:0;bottom:0;
+      left:0;
+      top:0;
+      bottom:0;
       width:4px;
       background:linear-gradient(180deg,var(--mint-main),var(--accent-warm));
     }
@@ -125,7 +139,11 @@
       gap:8px;
       margin-bottom:4px;
     }
-    .card-name{font-weight:600;font-size:1.02rem;color:var(--mint-dark);}
+    .card-name{
+      font-weight:600;
+      font-size:1.02rem;
+      color:var(--mint-dark);
+    }
     .card-date{
       font-size:0.72rem;
       color:var(--text-soft);
@@ -148,7 +166,9 @@
       letter-spacing:0.06em;
       color:var(--text-soft);
     }
-    .value{color:var(--text-main);}
+    .value{
+      color:var(--text-main);
+    }
     .actions{
       display:flex;
       justify-content:flex-end;
@@ -238,65 +258,6 @@
       cursor:pointer;
     }
     .backup-btn span.icon{font-size:0.9rem;}
-    /* pannello legenda */
-    .legend-sheet{
-      position:fixed;
-      left:0;right:0;bottom:-100%;
-      background:#F7F4EF;
-      border-radius:20px 20px 0 0;
-      box-shadow:0 -12px 28px rgba(0,0,0,0.35);
-      padding:14px 16px 18px;
-      max-height:70vh;
-      overflow:auto;
-      transition:bottom .18s ease-out;
-      z-index:20;
-    }
-    .legend-header{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      margin-bottom:10px;
-    }
-    .legend-title{
-      font-size:0.9rem;
-      font-weight:600;
-      color:var(--mint-dark);
-    }
-    .legend-close{
-      border:none;
-      background:transparent;
-      font-size:1.1rem;
-      cursor:pointer;
-      color:var(--text-soft);
-    }
-    .legend-list{
-      list-style:none;
-      margin-top:6px;
-    }
-    .legend-item{
-      padding:6px 2px;
-      font-size:0.9rem;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      border-bottom:1px dashed rgba(0,0,0,0.05);
-      cursor:pointer;
-    }
-    .legend-item span.name{
-      flex:1;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      color:var(--text-main);
-    }
-    .legend-item span.badge{
-      font-size:0.7rem;
-      padding:2px 6px;
-      border-radius:999px;
-      background:rgba(155,175,139,0.18);
-      color:var(--mint-dark);
-      margin-left:8px;
-    }
     @media (max-width:480px){
       .app{border-radius:20px;}
       .header h1{font-size:1.5rem;}
@@ -328,20 +289,11 @@
       <button class="fab-main" id="newBtn">
         <span>＋ Nuovo drink</span>
       </button>
-      <button class="fab-secondary" id="legendBtn">☰</button>
+      <button class="fab-secondary" id="menuBackupBtn">☰</button>
     </footer>
   </div>
 
   <input type="file" id="importInput" accept=".json" style="display:none" />
-
-  <!-- pannello legenda -->
-  <div id="legendSheet" class="legend-sheet">
-    <div class="legend-header">
-      <div class="legend-title">Legenda drink (tap per aprire)</div>
-      <button class="legend-close" id="legendCloseBtn">✕</button>
-    </div>
-    <ul id="legendList" class="legend-list"></ul>
-  </div>
 
   <script>
     const STORAGE_KEY = 'mintPocketDrinks_v1';
@@ -429,15 +381,6 @@
       reader.readAsText(file);
     }
 
-    function escapeHtml(str){
-      return String(str)
-        .replace(/&/g,'&amp;')
-        .replace(/</g,'&lt;')
-        .replace(/>/g,'&gt;')
-        .replace(/"/g,'&quot;')
-        .replace(/'/g,'&#39;');
-    }
-
     function render(){
       const listEl = document.getElementById('list');
       const q = document.getElementById('search').value.trim().toLowerCase();
@@ -455,3 +398,73 @@
             <span class="emoji">🥂</span>
             <p>Nessun drink salvato.</p>
             <p>Inizia a costruire la tua lista di cocktail di casa.</p>
+          </div>`;
+        return;
+      }
+
+      listEl.innerHTML = filtered.map(d => `
+        <article class="card">
+          <div class="card-top">
+            <div class="card-name">${escapeHtml(d.nome)}</div>
+            <span class="card-date">${escapeHtml(d.data)}</span>
+          </div>
+          <div class="card-body">
+            <div>
+              <div class="label">Ingredienti</div>
+              <div class="value">${escapeHtml(d.ingredienti || '—')}</div>
+            </div>
+            <div>
+              <div class="label">Note</div>
+              <div class="value">${escapeHtml(d.istruzioni || '—')}</div>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-ghost" onclick="editDrink(${d.id})">✏️ Modifica</button>
+            <button class="btn btn-primary" onclick="deleteDrink(${d.id})">🗑️ Elimina</button>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    function escapeHtml(str){
+      return String(str)
+        .replace(/&/g,'&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;')
+        .replace(/'/g,'&#39;');
+    }
+
+    document.getElementById('newBtn').addEventListener('click',createDrink);
+    document.getElementById('search').addEventListener('input',render);
+
+    document.getElementById('menuBackupBtn').addEventListener('click',()=>{
+      const existing = document.querySelector('.backup-bar');
+      if(existing){existing.remove();return;}
+      const bar = document.createElement('div');
+      bar.className = 'backup-bar';
+      bar.innerHTML = `
+        <button class="backup-btn" id="exportBtn">
+          <span class="icon">📤</span><span>Backup</span>
+        </button>
+        <button class="backup-btn" id="importBtn">
+          <span class="icon">📥</span><span>Ripristina</span>
+        </button>`;
+      document.querySelector('.fab-wrap').prepend(bar);
+      document.getElementById('exportBtn').onclick = exportDrinks;
+      document.getElementById('importBtn').onclick = () => {
+        document.getElementById('importInput').click();
+      };
+    });
+
+    document.getElementById('importInput').addEventListener('change',e=>{
+      const file = e.target.files[0];
+      if(file) importDrinks(file);
+      e.target.value='';
+    });
+
+    loadFromStorage();
+    render();
+  </script>
+</body>
+</html>
