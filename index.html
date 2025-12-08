@@ -193,6 +193,18 @@
       color:var(--mint-main);
       font-weight:bold;
     }
+    .preparation-list{
+      list-style:none;
+      display:flex;
+      flex-direction:column;
+      gap:3px;
+      margin-left:0;
+      padding-left:0;
+    }
+    .preparation-list li{
+      color:var(--text-main);
+      font-size:0.88rem;
+    }
     .value{
       color:var(--text-main);
       white-space:pre-wrap;
@@ -368,9 +380,10 @@
       padding:20px;
       width:100%;
       max-width:520px;
-      box-shadow:0 -10px 30px rgba(0,0,0,0.2);
       max-height:70vh;
-      overflow-y:auto;
+      display:flex;
+      flex-direction:column;
+      box-shadow:0 -10px 30px rgba(0,0,0,0.2);
     }
     .legend-header{
       display:flex;
@@ -380,6 +393,7 @@
       font-size:1.1rem;
       font-weight:600;
       color:var(--mint-dark);
+      flex-shrink:0;
     }
     .legend-close{
       background:none;
@@ -388,11 +402,17 @@
       cursor:pointer;
       color:var(--text-soft);
     }
+    .legend-scroll{
+      overflow-y:auto;
+      flex:1;
+    }
     .legend-list{
       list-style:none;
       display:flex;
       flex-direction:column;
       gap:8px;
+      margin:0;
+      padding:0;
     }
     .legend-item{
       padding:12px;
@@ -458,6 +478,18 @@
     </div>
   </div>
 
+  <!-- Modal per preparazione -->
+  <div id="preparationModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-title">Preparazione / Note</div>
+      <textarea id="preparationTextarea" class="modal-textarea" placeholder="Scrivi la preparazione su più righe..."></textarea>
+      <div class="modal-actions">
+        <button class="modal-btn modal-btn-cancel" id="cancelPreparationBtn">Annulla</button>
+        <button class="modal-btn modal-btn-confirm" id="confirmPreparationBtn">Salva</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal Legenda -->
   <div id="legendModal" class="legend-overlay">
     <div class="legend-content">
@@ -465,7 +497,9 @@
         Legenda
         <button class="legend-close" id="closeLegendBtn">✕</button>
       </div>
-      <ul id="legendList" class="legend-list"></ul>
+      <div class="legend-scroll">
+        <ul id="legendList" class="legend-list"></ul>
+      </div>
     </div>
   </div>
 
@@ -489,29 +523,38 @@
       render();
     }
 
-    function openIngredientsModal(defaultValue = '', callback){
-      document.getElementById('ingredientsTextarea').value = defaultValue;
-      document.getElementById('ingredientsModal').classList.add('active');
+    function openModal(modalId, defaultValue = '', callback){
+      const textarea = document.getElementById(modalId + 'Textarea');
+      textarea.value = defaultValue;
+      document.getElementById(modalId + 'Modal').classList.add('active');
       
-      const confirmBtn = document.getElementById('confirmIngredientsBtn');
-      const cancelBtn = document.getElementById('cancelIngredientsBtn');
+      const confirmBtn = document.getElementById('confirm' + modalId.charAt(0).toUpperCase() + modalId.slice(1) + 'Btn');
+      const cancelBtn = document.getElementById('cancel' + modalId.charAt(0).toUpperCase() + modalId.slice(1) + 'Btn');
       
       const handleConfirm = () => {
-        const value = document.getElementById('ingredientsTextarea').value;
-        document.getElementById('ingredientsModal').classList.remove('active');
+        const value = textarea.value;
+        document.getElementById(modalId + 'Modal').classList.remove('active');
         confirmBtn.removeEventListener('click', handleConfirm);
         cancelBtn.removeEventListener('click', handleCancel);
         callback(value);
       };
       
       const handleCancel = () => {
-        document.getElementById('ingredientsModal').classList.remove('active');
+        document.getElementById(modalId + 'Modal').classList.remove('active');
         confirmBtn.removeEventListener('click', handleConfirm);
         cancelBtn.removeEventListener('click', handleCancel);
       };
       
       confirmBtn.addEventListener('click', handleConfirm);
       cancelBtn.addEventListener('click', handleCancel);
+    }
+
+    function openIngredientsModal(defaultValue = '', callback){
+      openModal('ingredients', defaultValue, callback);
+    }
+
+    function openPreparationModal(defaultValue = '', callback){
+      openModal('preparation', defaultValue, callback);
     }
 
     function openLegenda(){
@@ -546,15 +589,16 @@
       const nome = prompt('Nome del drink:');
       if(!nome) return;
       openIngredientsModal('', (ingr) => {
-        const istr = prompt('Preparazione / note:') || '';
-        drinks.unshift({
-          id: Date.now(),
-          nome,
-          ingredienti: ingr,
-          istruzioni: istr,
-          data: new Date().toLocaleDateString('it-IT')
+        openPreparationModal('', (istr) => {
+          drinks.unshift({
+            id: Date.now(),
+            nome,
+            ingredienti: ingr,
+            istruzioni: istr,
+            data: new Date().toLocaleDateString('it-IT')
+          });
+          saveToStorage();
         });
-        saveToStorage();
       });
     }
 
@@ -564,12 +608,13 @@
       const nome = prompt('Nome del drink:', d.nome);
       if(!nome) return;
       openIngredientsModal(d.ingredienti, (ingr) => {
-        const istr = prompt('Preparazione / note:', d.istruzioni) ?? d.istruzioni;
-        d.nome = nome;
-        d.ingredienti = ingr;
-        d.istruzioni = istr;
-        d.data = new Date().toLocaleDateString('it-IT');
-        saveToStorage();
+        openPreparationModal(d.istruzioni, (istr) => {
+          d.nome = nome;
+          d.ingredienti = ingr;
+          d.istruzioni = istr;
+          d.data = new Date().toLocaleDateString('it-IT');
+          saveToStorage();
+        });
       });
     }
 
@@ -618,6 +663,11 @@
       return str.split('\n').map(i => i.trim()).filter(i => i.length > 0);
     }
 
+    function parsePreparation(str){
+      if(!str || !str.trim()) return [];
+      return str.split('\n').map(i => i.trim()).filter(i => i.length > 0);
+    }
+
     function render(){
       const listEl = document.getElementById('list');
       const q = document.getElementById('search').value.trim().toLowerCase();
@@ -648,6 +698,7 @@
 
       listEl.innerHTML = filtered.map(d => {
         const ingredienti = parseIngredienti(d.ingredienti);
+        const preparation = parsePreparation(d.istruzioni);
         return `
         <article class="card">
           <div class="card-top">
@@ -662,10 +713,10 @@
                 : `<div class="value">—</div>`
               }
             </div>
-            ${d.istruzioni ? `
+            ${preparation.length > 0 ? `
             <div class="ingredient-section">
-              <div class="label">Note</div>
-              <div class="value">${escapeHtml(d.istruzioni)}</div>
+              <div class="label">Preparazione</div>
+              <ul class="preparation-list">${preparation.map(p => `<li>${escapeHtml(p)}</li>`).join('')}</ul>
             </div>
             ` : ''}
           </div>
@@ -730,3 +781,4 @@
   </script>
 </body>
 </html>
+
