@@ -138,6 +138,39 @@
       font-size:0.7rem;
       font-weight:500;
     }
+
+    /* Strip drink da ripassare */
+    .review-strip{
+      display:none;
+      padding:6px 16px 4px;
+      background:rgba(247,244,239,0.9);
+      border-bottom:1px solid rgba(0,0,0,0.03);
+      overflow-x:auto;
+      -webkit-overflow-scrolling:touch;
+    }
+    .review-strip-inner{
+      display:flex;
+      flex-wrap:nowrap;
+      gap:6px;
+    }
+    .review-chip{
+      border:none;
+      border-radius:999px;
+      padding:6px 10px;
+      font-size:0.78rem;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap:4px;
+      background:linear-gradient(135deg,#F3D9A4,#E9B86C);
+      color:#5C4A2A;
+      white-space:nowrap;
+      box-shadow:0 3px 8px rgba(0,0,0,0.12);
+    }
+    .review-chip span.icon{
+      font-size:0.9rem;
+    }
+
     .list{
       padding:14px 16px 80px;
       background:linear-gradient(180deg,rgba(227,233,220,0.55),transparent 26px);
@@ -263,6 +296,7 @@
       justify-content:flex-end;
       gap:6px;
       margin-top:4px;
+      flex-wrap:wrap;
     }
     .btn{
       border:none;
@@ -353,7 +387,7 @@
       cursor:pointer;
     }
     .backup-btn span.icon{font-size:0.9rem;}
-    /* Modal */
+    /* Modal base */
     .modal-overlay{
       display:none;
       position:fixed;
@@ -380,6 +414,7 @@
       font-size:1.1rem;
       font-weight:600;
       color:var(--mint-dark);
+      margin-bottom:12px;
     }
     .modal-header{
       display:flex;
@@ -503,7 +538,7 @@
       background:rgba(155,175,139,0.1);
       color:var(--mint-dark);
     }
-    /* Modal Categories Management */
+    /* Gestione categorie */
     .categories-modal-content{
       max-height:70vh;
       overflow-y:auto;
@@ -593,7 +628,7 @@
       background:rgba(217,83,79,0.1);
       color:#d9534f;
     }
-    /* Modal Legenda */
+    /* Legenda */
     .legend-overlay{
       display:none;
       position:fixed;
@@ -767,6 +802,9 @@
       <div class="counter" id="counter">0</div>
     </section>
 
+    <!-- Strip dei drink da ripassare (solo chip, senza testo di sezione) -->
+    <section class="review-strip" id="reviewStrip"></section>
+
     <main class="list" id="list"></main>
 
     <footer class="fab-wrap">
@@ -777,8 +815,8 @@
     </footer>
   </div>
 
-  <!-- Modal per selezione tipo -->
-  <div id="typeModal" class="modal-overlay" onclick="if(event.target === this) closeModal('typeModal')">
+  <!-- Modal tipo -->
+  <div id="typeModal" class="modal-overlay" onclick="if(event.target === this) closeModal('type')">
     <div class="modal-content">
       <div class="modal-title">Seleziona tipo</div>
       <select id="typeSelect" class="modal-select">
@@ -793,8 +831,8 @@
     </div>
   </div>
 
-  <!-- Modal per categorie -->
-  <div id="categoriesModal" class="modal-overlay" onclick="if(event.target === this) closeModal('categoriesModal')">
+  <!-- Modal selezione categorie -->
+  <div id="categoriesModal" class="modal-overlay" onclick="if(event.target === this) closeModal('categories')">
     <div class="modal-content">
       <div class="modal-title">Seleziona categorie</div>
       <div class="categories-grid" id="categoriesGrid"></div>
@@ -805,8 +843,8 @@
     </div>
   </div>
 
-  <!-- Modal per gestione categorie -->
-  <div id="manageCategoriesModal" class="modal-overlay" onclick="if(event.target === this) closeModal('manageCategoriesModal')">
+  <!-- Modal gestione categorie -->
+  <div id="manageCategoriesModal" class="modal-overlay" onclick="if(event.target === this) closeModal('manageCategories')">
     <div class="modal-content categories-modal-content">
       <div class="modal-header">
         <div class="modal-title">Gestione Categorie</div>
@@ -819,8 +857,8 @@
     </div>
   </div>
 
-  <!-- Modal per ingredienti -->
-  <div id="ingredientsModal" class="modal-overlay" onclick="if(event.target === this) closeModal('ingredientsModal')">
+  <!-- Modal ingredienti -->
+  <div id="ingredientsModal" class="modal-overlay" onclick="if(event.target === this) closeModal('ingredients')">
     <div class="modal-content">
       <div class="modal-title">Ingredienti</div>
       <textarea id="ingredientsTextarea" class="modal-textarea" placeholder="Scrivi ogni ingrediente su una nuova riga:
@@ -834,8 +872,8 @@
     </div>
   </div>
 
-  <!-- Modal per preparazione -->
-  <div id="preparationModal" class="modal-overlay" onclick="if(event.target === this) closeModal('preparationModal')">
+  <!-- Modal preparazione -->
+  <div id="preparationModal" class="modal-overlay" onclick="if(event.target === this) closeModal('preparation')">
     <div class="modal-content">
       <div class="modal-title">Preparazione / Note</div>
       <textarea id="preparationTextarea" class="modal-textarea" placeholder="Scrivi la preparazione su più righe..."></textarea>
@@ -846,7 +884,7 @@
     </div>
   </div>
 
-  <!-- Modal Legenda -->
+  <!-- Modal legenda -->
   <div id="legendModal" class="legend-overlay" onclick="if(event.target === this) closeLegenda()">
     <div class="legend-content">
       <div class="legend-header">
@@ -872,10 +910,9 @@
     let drinks = [];
     let categories = [];
     let hasSearched = false;
-    let currentFilter = null; // {type: 'category', id: categoryId}
+    let currentFilter = null;
     let currentLegendaTab = 'drink';
-    let pendingDrinkData = null;
-    let editingDrinkId = null;
+    let draggedIndex = null;
 
     function loadFromStorage(){
       try{
@@ -896,6 +933,7 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(drinks));
       localStorage.setItem(CATEGORIES_KEY, JSON.stringify(categories));
       render();
+      renderReviewStrip();
     }
 
     function saveCategories(){
@@ -903,7 +941,8 @@
     }
 
     function closeModal(modalId){
-      document.getElementById(modalId + 'Modal').classList.remove('active');
+      const el = document.getElementById(modalId + 'Modal');
+      if(el) el.classList.remove('active');
     }
 
     function setFilter(type, id){
@@ -927,28 +966,25 @@
       clearFilter();
       loadFromStorage();
       render();
+      renderReviewStrip();
     }
 
     function updateUIForFilter(){
       const headerSub = document.getElementById('headerSub');
       const statusTag = document.getElementById('statusTag');
       const filterIndicator = document.getElementById('filterIndicator');
-      
-      if(currentFilter){
-        if(currentFilter.type === 'category'){
-          const cat = categories.find(c => c.id === currentFilter.id);
-          if(cat){
-            headerSub.textContent = `"${cat.nome}"`;
-            filterIndicator.textContent = cat.nome;
-            filterIndicator.style.display = 'block';
-            statusTag.style.display = 'none';
-            return;
-          }
+      if(currentFilter && currentFilter.type === 'category'){
+        const cat = categories.find(c => c.id === currentFilter.id);
+        if(cat){
+          headerSub.textContent = `"${cat.nome}"`;
+          filterIndicator.textContent = cat.nome;
+          filterIndicator.style.display = 'block';
+          if(statusTag) statusTag.style.display = 'none';
+          return;
         }
       }
-      
       headerSub.textContent = 'Il taccuino dei tuoi drink';
-      statusTag.style.display = 'block';
+      if(statusTag) statusTag.style.display = 'block';
       filterIndicator.style.display = 'none';
     }
 
@@ -956,7 +992,7 @@
       document.getElementById('typeModal').classList.add('active');
       const confirmBtn = document.getElementById('confirmTypeBtn');
       const cancelBtn = document.getElementById('cancelTypeBtn');
-      
+
       const handleConfirm = () => {
         const type = document.getElementById('typeSelect').value;
         if(!type){
@@ -968,13 +1004,12 @@
         cancelBtn.removeEventListener('click', handleCancel);
         callback(type);
       };
-      
       const handleCancel = () => {
         closeModal('type');
         confirmBtn.removeEventListener('click', handleConfirm);
         cancelBtn.removeEventListener('click', handleCancel);
       };
-      
+
       confirmBtn.addEventListener('click', handleConfirm);
       cancelBtn.addEventListener('click', handleCancel);
     }
@@ -982,10 +1017,9 @@
     function openCategoriesModal(selectedCategories = [], callback){
       buildCategoriesGrid(selectedCategories);
       document.getElementById('categoriesModal').classList.add('active');
-      
       const confirmBtn = document.getElementById('confirmCategoriesBtn');
       const cancelBtn = document.getElementById('cancelCategoriesBtn');
-      
+
       const handleConfirm = () => {
         const selected = Array.from(document.querySelectorAll('#categoriesGrid input:checked')).map(cb => parseInt(cb.value));
         closeModal('categories');
@@ -993,13 +1027,12 @@
         cancelBtn.removeEventListener('click', handleCancel);
         callback(selected);
       };
-      
       const handleCancel = () => {
         closeModal('categories');
         confirmBtn.removeEventListener('click', handleConfirm);
         cancelBtn.removeEventListener('click', handleCancel);
       };
-      
+
       confirmBtn.addEventListener('click', handleConfirm);
       cancelBtn.addEventListener('click', handleCancel);
     }
@@ -1021,10 +1054,9 @@
       const textarea = document.getElementById(modalId + 'Textarea');
       textarea.value = defaultValue;
       document.getElementById(modalId + 'Modal').classList.add('active');
-      
       const confirmBtn = document.getElementById('confirm' + modalId.charAt(0).toUpperCase() + modalId.slice(1) + 'Btn');
       const cancelBtn = document.getElementById('cancel' + modalId.charAt(0).toUpperCase() + modalId.slice(1) + 'Btn');
-      
+
       const handleConfirm = () => {
         const value = textarea.value;
         closeModal(modalId);
@@ -1032,13 +1064,12 @@
         cancelBtn.removeEventListener('click', handleCancel);
         callback(value);
       };
-      
       const handleCancel = () => {
         closeModal(modalId);
         confirmBtn.removeEventListener('click', handleConfirm);
         cancelBtn.removeEventListener('click', handleCancel);
       };
-      
+
       confirmBtn.addEventListener('click', handleConfirm);
       cancelBtn.addEventListener('click', handleCancel);
     }
@@ -1100,31 +1131,29 @@
       if(cat) cat.color = color;
       saveCategories();
       render();
+      renderReviewStrip();
       updateUIForFilter();
     }
 
     function removeCategory(id){
-      if(confirm('Eliminare questa categoria? I drink che la usano perderanno questo riferimento.')){
-        categories = categories.filter(c => c.id !== id);
-        drinks.forEach(drink => {
-          drink.categorie = drink.categorie ? drink.categorie.filter(c => c !== id) : [];
-        });
-        saveCategories();
-        saveToStorage();
-        buildCategoriesList();
-        render();
-        updateUIForFilter();
-      }
+      if(!confirm('Eliminare questa categoria? I drink che la usano perderanno questo riferimento.')) return;
+      categories = categories.filter(c => c.id !== id);
+      drinks.forEach(drink => {
+        drink.categorie = drink.categorie ? drink.categorie.filter(c => c !== id) : [];
+      });
+      saveCategories();
+      saveToStorage();
+      buildCategoriesList();
+      render();
+      renderReviewStrip();
+      updateUIForFilter();
     }
 
-    let draggedIndex = null;
     function dragStart(e, index){
       draggedIndex = index;
       e.target.style.opacity = '0.5';
     }
-    function dragOver(e){
-      e.preventDefault();
-    }
+    function dragOver(e){ e.preventDefault(); }
     function drop(e, index){
       e.preventDefault();
       if(draggedIndex !== null && draggedIndex !== index){
@@ -1157,10 +1186,8 @@
           drinkLetters.add(letter);
         }
       });
-
       const alphabetEl = document.getElementById('alphabet');
       alphabetEl.innerHTML = '';
-      
       for(let i = 65; i <= 90; i++){
         const letter = String.fromCharCode(i);
         const btn = document.createElement('button');
@@ -1181,7 +1208,6 @@
     function scrollToLetter(letter){
       const listItems = document.querySelectorAll('.legend-item');
       let targetItem = null;
-      
       for(let item of listItems){
         const firstLetter = item.querySelector('.legend-item-name').textContent.charAt(0).toUpperCase();
         if(firstLetter === letter){
@@ -1189,7 +1215,6 @@
           break;
         }
       }
-      
       if(targetItem){
         const scroll = document.querySelector('.legend-scroll');
         const offset = targetItem.offsetTop - scroll.offsetTop - 10;
@@ -1201,13 +1226,11 @@
       const filtered = drinks.filter(d => d.tipo === currentLegendaTab);
       const sorted = [...filtered].sort((a,b) => a.nome.localeCompare(b.nome));
       const legendList = document.getElementById('legendList');
-      
       if(sorted.length === 0){
         legendList.innerHTML = '<li style="text-align:center;padding:20px;color:var(--text-soft)">Nessun elemento salvato</li>';
         buildAlphabet();
         return;
       }
-
       let currentLetter = '';
       legendList.innerHTML = sorted.map(d => {
         const letter = d.nome.charAt(0).toUpperCase();
@@ -1222,7 +1245,6 @@
           </li>
         `;
       }).join('');
-      
       buildAlphabet();
     }
 
@@ -1245,6 +1267,7 @@
       hasSearched = true;
       closeLegenda();
       render();
+      renderReviewStrip();
     }
 
     function createDrink(){
@@ -1261,6 +1284,7 @@
                 categorie: categorie || [],
                 ingredienti: ingr,
                 istruzioni: istr,
+                ripasso: false,
                 data: new Date().toLocaleDateString('it-IT')
               });
               saveToStorage();
@@ -1271,7 +1295,6 @@
     }
 
     function editDrink(id){
-      editingDrinkId = id;
       const d = drinks.find(x => x.id === id);
       if(!d) return;
       const nome = prompt('Nome del drink:', d.nome);
@@ -1288,9 +1311,26 @@
               drink.data = new Date().toLocaleDateString('it-IT');
             }
             saveToStorage();
-            editingDrinkId = null;
           });
         });
+      });
+    }
+
+    function toggleRipasso(id){
+      const d = drinks.find(x => x.id === id);
+      if(!d) return;
+      d.ripasso = !d.ripasso;
+      saveToStorage();
+      renderReviewStrip();
+    }
+
+    function openPreparationQuick(id){
+      const d = drinks.find(x => x.id === id);
+      if(!d) return;
+      openPreparationModal(d.istruzioni || '', (istr) => {
+        d.istruzioni = istr;
+        d.data = new Date().toLocaleDateString('it-IT');
+        saveToStorage();
       });
     }
 
@@ -1303,10 +1343,7 @@
     }
 
     function exportDrinks(){
-      const exportData = {
-        drinks,
-        categories
-      };
+      const exportData = {drinks,categories};
       const blob = new Blob([JSON.stringify(exportData,null,2)],{type:'application/json'});
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
@@ -1323,10 +1360,8 @@
           const imported = JSON.parse(e.target.result);
           const drinkCount = imported.drinks?.length || 0;
           const catCount = imported.categories?.length || 0;
-          
           if(!confirm(`Importare ${drinkCount} drink e ${catCount} categorie?`)) return;
-          
-          // Importa drink con gestione sicura delle categorie mancanti
+
           drinks = (imported.drinks || []).map(d => ({
             id: d.id || Date.now() + Math.random(),
             nome: d.nome?.trim() || 'Senza nome',
@@ -1334,10 +1369,10 @@
             categorie: Array.isArray(d.categorie) ? d.categorie.filter(cId => categories.find(c => c.id === cId) || imported.categories?.find(c => c.id === cId)) : [],
             ingredienti: d.ingredienti || '',
             istruzioni: d.istruzioni || '',
+            ripasso: typeof d.ripasso === 'boolean' ? d.ripasso : false,
             data: d.data || new Date().toLocaleDateString('it-IT')
           }));
-          
-          // Importa categorie
+
           if(imported.categories && Array.isArray(imported.categories)){
             categories = imported.categories.map((c, i) => ({
               id: c.id || Date.now() + i,
@@ -1346,7 +1381,7 @@
               position: i
             }));
           }
-          
+
           saveToStorage();
         }catch{
           alert('File non valido.');
@@ -1359,16 +1394,36 @@
       if(!str || !str.trim()) return [];
       return str.split('\n').map(i => i.trim()).filter(i => i.length > 0);
     }
-
     function parsePreparation(str){
       if(!str || !str.trim()) return [];
       return str.split('\n').map(i => i.trim()).filter(i => i.length > 0);
     }
 
+    function renderReviewStrip(){
+      const strip = document.getElementById('reviewStrip');
+      if(!strip) return;
+      const toReview = drinks.filter(d => d.ripasso);
+      if(toReview.length === 0){
+        strip.innerHTML = '';
+        strip.style.display = 'none';
+        return;
+      }
+      strip.style.display = 'block';
+      strip.innerHTML = `
+        <div class="review-strip-inner">
+          ${toReview.map(d => `
+            <button class="review-chip" onclick="openPreparationQuick(${d.id})">
+              <span class="icon">🧠</span><span>${escapeHtml(d.nome)}</span>
+            </button>
+          `).join('')}
+        </div>
+      `;
+    }
+
     function render(){
       const listEl = document.getElementById('list');
       const q = document.getElementById('search').value.trim().toLowerCase();
-      
+
       if(!q && !hasSearched && !currentFilter){
         listEl.innerHTML = `
           <div class="empty">
@@ -1380,17 +1435,12 @@
       }
 
       let filtered = drinks;
-
-      // Applica filtro categoria
       if(currentFilter && currentFilter.type === 'category'){
         filtered = filtered.filter(d => d.categorie && d.categorie.includes(currentFilter.id));
       }
-
-      // Applica ricerca testo
       if(q){
         filtered = filtered.filter(d => d.nome.toLowerCase().includes(q));
       }
-
       document.getElementById('counter').textContent = filtered.length;
 
       if(filtered.length === 0){
@@ -1409,8 +1459,7 @@
         const catTags = (d.categorie || []).map(catId => {
           const cat = categories.find(c => c.id === catId);
           return cat ? `<span class="category-tag" style="background: ${cat.color}">${escapeHtml(cat.nome)}</span>` : '';
-        }).filter(tag => tag).join('');
-        
+        }).filter(Boolean).join('');
         return `
         <article class="card">
           <div class="card-top">
@@ -1423,7 +1472,7 @@
           <div class="card-body">
             <div class="ingredient-section">
               <div class="label">Ingredienti</div>
-              ${ingredienti.length > 0 
+              ${ingredienti.length > 0
                 ? `<ul class="ingredient-list">${ingredienti.map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul>`
                 : `<div class="value">—</div>`
               }
@@ -1432,16 +1481,19 @@
             <div class="ingredient-section">
               <div class="label">Preparazione</div>
               <ul class="preparation-list">${preparation.map(p => `<li>${escapeHtml(p)}</li>`).join('')}</ul>
-            </div>
-            ` : ''}
+            </div>` : ''}
           </div>
           <div class="actions">
             <button class="btn btn-ghost" onclick="editDrink(${d.id})">✏️ Modifica</button>
+            <button class="btn btn-ghost" onclick="toggleRipasso(${d.id})">
+              ${d.ripasso ? '🧠 Togli ripasso' : '🧠 Ripasso'}
+            </button>
             <button class="btn btn-primary" onclick="deleteDrink(${d.id})">🗑️ Elimina</button>
           </div>
-        </article>
-      `;
+        </article>`;
       }).join('');
+
+      renderReviewStrip();
     }
 
     function escapeHtml(str){
@@ -1454,12 +1506,11 @@
         .replace(/'/g,'&#39;');
     }
 
-    // Event Listeners
     document.getElementById('newBtn').addEventListener('click', createDrink);
     document.getElementById('search').addEventListener('input', (e) => {
       if(e.target.value.trim().length > 0){
         hasSearched = true;
-        currentFilter = null; // Clear category filter when searching
+        currentFilter = null;
       }
       render();
       updateUIForFilter();
@@ -1491,7 +1542,7 @@
           <span class="icon">📥</span><span>Ripristina</span>
         </button>`;
       document.querySelector('.fab-wrap').prepend(bar);
-      
+
       document.getElementById('refreshBtn').onclick = refreshPage;
       document.getElementById('clearFilterBtn').onclick = clearFilter;
       document.getElementById('legendBtn').onclick = (e) => { e.stopPropagation(); openLegenda(); };
@@ -1504,7 +1555,7 @@
     document.getElementById('saveCategoriesBtn').addEventListener('click', () => {
       closeModal('manageCategories');
     });
-    
+
     document.getElementById('importInput').addEventListener('change', e => {
       const file = e.target.files[0];
       if(file) importDrinks(file);
@@ -1513,6 +1564,7 @@
 
     loadFromStorage();
     render();
+    renderReviewStrip();
     updateUIForFilter();
   </script>
 </body>
