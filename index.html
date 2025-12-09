@@ -1412,7 +1412,7 @@
       strip.innerHTML = `
         <div class="review-strip-inner">
           ${toReview.map(d => `
-            <button class="review-chip" onclick="editDrink(${d.id})">
+            <button class="review-chip" onclick="viewDrink(${d.id})">
               <span class="icon">🧠</span><span>${escapeHtml(d.nome)}</span>
             </button>
           `).join('')}
